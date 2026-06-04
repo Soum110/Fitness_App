@@ -1,0 +1,17 @@
+[
+  {"name": "Push-Up", "description": "Standard push-ups targeting chest, shoulders, and triceps. Keep core tight and body straight throughout the movement."},
+  {"name": "Bodyweight Squat", "description": "Full range of motion squats for legs and glutes. Drive through your heels and keep your chest up."},
+  {"name": "Pull-Up", "description": "Overhand-grip pull-ups for back width and biceps. Aim for full extension at the bottom."},
+  {"name": "Plank", "description": "Hold a rigid plank position, core braced, for the target duration. Builds foundational core strength."},
+  {"name": "Dumbbell Row", "description": "Bent-over single-arm rows targeting the lats and rhomboids. Keep back flat and drive elbow to ceiling."},
+  {"name": "Pike Push-Up", "description": "Shoulder-targeting push-up variation from a downward dog position. Great for overhead pressing strength."},
+  {"name": "Bulgarian Split Squat", "description": "Single-leg squat with rear foot elevated. Excellent for unilateral leg strength and hip flexibility."},
+  {"name": "Diamond Push-Up", "description": "Narrow-grip push-up with hands forming a diamond. Isolates the triceps more intensely."},
+  {"name": "Inverted Row", "description": "Horizontal pulling movement using a bar or table edge. Builds upper back thickness and posture."},
+  {"name": "Jump Squat", "description": "Explosive squat variation jumping at the top. Builds power, stamina, and burns more calories."},
+  {"name": "Lunges", "description": "Step forward into a deep lunge, alternating legs. Trains quads, glutes, and hip flexors."},
+  {"name": "Dips", "description": "Parallel bar dips targeting chest and triceps. Control the descent and drive up powerfully."},
+  {"name": "Burpee", "description": "Full-body conditioning exercise combining squat, push-up, and jump. A true test of stamina."},
+  {"name": "Mountain Climbers", "description": "Running-in-place in push-up position. Excellent cardio and core challenge combined."},
+  {"name": "Hip Thrust", "description": "Glute bridge with shoulders on bench. The most effective exercise for glute development."}
+]

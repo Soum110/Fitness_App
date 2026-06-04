@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Dark background circle -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z"/>
+
+    <!-- Outer glow ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#7B61FF"
+        android:strokeWidth="2"
+        android:pathData="M54,12 A42,42 0 1,1 53.99,12 Z"/>
+
+    <!-- Sword blade -->
+    <path
+        android:fillColor="#C0C0FF"
+        android:pathData="M54,22 L58,80 L54,86 L50,80 Z"/>
+
+    <!-- Sword crossguard -->
+    <path
+        android:fillColor="#7B61FF"
+        android:pathData="M36,68 L72,68 L72,73 L36,73 Z"/>
+
+    <!-- Sword handle -->
+    <path
+        android:fillColor="#9D4EDD"
+        android:pathData="M50,73 L58,73 L58,88 L50,88 Z"/>
+
+    <!-- Gem on handle -->
+    <path
+        android:fillColor="#FF6B9D"
+        android:pathData="M54,75 L57,79 L54,83 L51,79 Z"/>
+
+    <!-- Star sparkles -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:alpha="0.8"
+        android:pathData="M30,35 L31.5,38 L35,38 L32.5,40 L33.5,44 L30,42 L26.5,44 L27.5,40 L25,38 L28.5,38 Z"/>
+
+    <path
+        android:fillColor="#7B61FF"
+        android:alpha="0.9"
+        android:pathData="M78,30 L79,32.5 L81.5,32.5 L79.5,34 L80.3,37 L78,35.5 L75.7,37 L76.5,34 L74.5,32.5 L77,32.5 Z"/>
+
+    <path
+        android:fillColor="#FF6B9D"
+        android:alpha="0.7"
+        android:pathData="M25,55 L25.8,57 L28,57 L26.3,58.2 L27,60.5 L25,59.2 L23,60.5 L23.7,58.2 L22,57 L24.2,57 Z"/>
+</vector>

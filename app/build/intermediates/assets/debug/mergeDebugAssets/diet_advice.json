@@ -1,0 +1,56 @@
+{
+  "CUT": {
+    "OMNIVORE": {
+      "calories": "Eat 300–500 kcal below maintenance (typically 1800–2200 kcal).",
+      "protein": "Aim for 2.0–2.4g protein per kg of bodyweight to preserve muscle.",
+      "meals": [
+        "Breakfast: 3 egg whites + 1 whole egg + oats (40g) + black coffee",
+        "Lunch: 150g grilled chicken breast + large salad + olive oil dressing",
+        "Snack: Greek yogurt (0% fat) + 1 handful almonds",
+        "Dinner: 150g white fish + steamed broccoli + 100g sweet potato",
+        "Pre-bed: 1 scoop casein protein + water"
+      ],
+      "avoid": ["Refined sugars", "Liquid calories", "Fried foods", "Alcohol"]
+    },
+    "VEGAN": {
+      "calories": "Eat 300–500 kcal below maintenance. Track carefully as plant foods are filling.",
+      "protein": "Aim for 1.8–2.2g protein per kg. Combine complementary proteins.",
+      "meals": [
+        "Breakfast: Tofu scramble (150g) + spinach + nutritional yeast + black coffee",
+        "Lunch: Lentil soup + quinoa (100g cooked) + side salad",
+        "Snack: Edamame (100g) + rice cakes",
+        "Dinner: Tempeh stir-fry (150g) + broccoli + soy sauce + brown rice (100g)",
+        "Pre-bed: Pea protein shake (25g protein)"
+      ],
+      "avoid": ["High-sugar fruits in excess", "Processed vegan junk food", "White bread"]
+    }
+  },
+  "BULK": {
+    "OMNIVORE": {
+      "calories": "Eat 300–500 kcal above maintenance. Aim for lean bulking to minimize fat gain.",
+      "protein": "Aim for 1.8–2.2g protein per kg. Carbs are your friend for energy.",
+      "meals": [
+        "Breakfast: 4 whole eggs scrambled + 2 slices sourdough + 250ml whole milk",
+        "Lunch: 200g beef mince (90% lean) + rice (200g cooked) + vegetables",
+        "Post-Workout: 50g oats + 2 bananas + 1 scoop whey protein",
+        "Dinner: 200g salmon + pasta (200g cooked) + olive oil + vegetables",
+        "Snack: Peanut butter (30g) + 2 rice cakes + 1 banana"
+      ],
+      "avoid": ["Dirty bulk foods (excessive junk)", "Skipping meals", "Under-eating protein"]
+    }
+  },
+  "RECOMP": {
+    "OMNIVORE": {
+      "calories": "Eat at or very close to maintenance calories. High protein is critical.",
+      "protein": "Aim for 2.2–2.6g protein per kg — the highest of all phases.",
+      "meals": [
+        "Breakfast: Overnight oats (60g) + chia seeds + whey protein + berries",
+        "Lunch: 180g turkey breast + sweet potato (150g) + asparagus",
+        "Snack: Cottage cheese (200g) + walnuts (20g)",
+        "Dinner: 180g cod + green beans + quinoa (100g cooked)",
+        "Pre-bed: 1 scoop casein + small handful mixed nuts"
+      ],
+      "avoid": ["Processed foods", "Sugary snacks", "Excessive alcohol"]
+    }
+  }
+}

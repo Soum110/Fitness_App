@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.fitquest.rpg.app-mergeDebugResources-64:/values-watch-v20/values-watch-v20.xml",
+            "map": [
+                {
+                    "source": "/Users/soumensen/.gradle/caches/transforms-3/46444e1a9e20910f85c82fd3083bb283/transformed/appcompat-1.6.1/res/values-watch-v20/values-watch-v20.xml",
+                    "from": {
+                        "startLines": "2,5,8",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,214,385",
+                        "endLines": "4,7,10",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "209,380,553"
+                    }
+                }
+            ]
+        }
+    ]
+}
