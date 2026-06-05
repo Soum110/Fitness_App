@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <!-- Left Top Half (Orange-Gold Shadow) -->
+  <path
+      android:fillColor="#F57F17"
+      android:pathData="M12,2 L6,12 H12 Z"/>
+  <!-- Right Top Half (Yellow-Gold Highlight) -->
+  <path
+      android:fillColor="#FFE082"
+      android:pathData="M12,2 V12 H16 Z"/>
+  
+  <!-- Left Bottom Half (Deep Gold Shadow) -->
+  <path
+      android:fillColor="#E65100"
+      android:pathData="M12,12 L8,22 L12,13.5 Z"/>
+  <!-- Right Bottom Half (Gold Midtone) -->
+  <path
+      android:fillColor="#FDD835"
+      android:pathData="M12,12 L12,13.5 H15 Z"/>
+
+  <!-- Center Shine Axis (Brilliant White Highlight) -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M12,2 L12,13.5 H12.8 Z"/>
+</vector>

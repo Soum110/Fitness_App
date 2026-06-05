@@ -3,6 +3,7 @@ package com.fitquest.rpg.features.store;
 import androidx.lifecycle.ViewModel;
 import com.fitquest.rpg.core.data.repository.*;
 import com.fitquest.rpg.core.domain.model.*;
+import com.google.firebase.auth.FirebaseAuth;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import kotlinx.coroutines.flow.*;
 import javax.inject.Inject;

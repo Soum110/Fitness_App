@@ -1,0 +1,14 @@
+{
+  "antigravity.ai.provider": "openai-compatible",
+  "antigravity.openai-compatible.endpoint": "https://openrouter.ai/api/v1",
+  "antigravity.openai-compatible.apiKey": "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",
+  "antigravity.ai.model": "nvidia/nemotron-3-super-120b-a12b:free",
+  
+  "antigravity.agent.enabled": true,
+  "antigravity.agent.provider": "openai-compatible",
+  "antigravity.agent.openai-compatible.endpoint": "https://openrouter.ai/api/v1",
+  "antigravity.agent.openai-compatible.apiKey": "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",
+  "antigravity.agent.model": "nvidia/nemotron-3-super-120b-a12b:free",
+  
+  "antigravity.fallback.enabled": false
+}

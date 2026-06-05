@@ -5,51 +5,70 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Dark background circle -->
+    <!-- Inner background glowing circle -->
     <path
-        android:fillColor="#1A1A2E"
-        android:pathData="M0,0 L108,0 L108,108 L0,108 Z"/>
+        android:fillColor="#120E2E"
+        android:pathData="M54,18 A36,36 0 1,1 53.99,18 Z"/>
 
-    <!-- Outer glow ring -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#7B61FF"
-        android:strokeWidth="2"
-        android:pathData="M54,12 A42,42 0 1,1 53.99,12 Z"/>
-
-    <!-- Sword blade -->
-    <path
-        android:fillColor="#C0C0FF"
-        android:pathData="M54,22 L58,80 L54,86 L50,80 Z"/>
-
-    <!-- Sword crossguard -->
-    <path
-        android:fillColor="#7B61FF"
-        android:pathData="M36,68 L72,68 L72,73 L36,73 Z"/>
-
-    <!-- Sword handle -->
-    <path
-        android:fillColor="#9D4EDD"
-        android:pathData="M50,73 L58,73 L58,88 L50,88 Z"/>
-
-    <!-- Gem on handle -->
+    <!-- Glowing Background Aura (Radial gradient look via layered transparent paths) -->
     <path
         android:fillColor="#FF6B9D"
-        android:pathData="M54,75 L57,79 L54,83 L51,79 Z"/>
+        android:alpha="0.15"
+        android:pathData="M54,12 A42,42 0 1,1 53.99,12 Z"/>
+    <path
+        android:fillColor="#7B61FF"
+        android:alpha="0.25"
+        android:pathData="M54,24 A30,30 0 1,1 53.99,24 Z"/>
 
-    <!-- Star sparkles -->
+    <!-- Left Wing (Stylized, neon/cyber wing) -->
+    <path
+        android:fillColor="#7B61FF"
+        android:pathData="M50,45 C40,40 25,35 16,42 C16,42 22,50 32,52 C24,53 14,52 8,60 C8,60 18,65 30,62 C22,66 12,70 10,78 C18,78 30,73 40,68 C44,66 48,60 50,56 Z"/>
+
+    <!-- Right Wing (Stylized, neon/cyber wing) -->
+    <path
+        android:fillColor="#7B61FF"
+        android:pathData="M58,45 C68,40 83,35 92,42 C92,42 86,50 76,52 C84,53 94,52 100,60 C100,60 90,65 78,62 C86,66 96,70 98,78 C90,78 78,73 68,68 C64,66 60,60 58,56 Z"/>
+
+    <!-- Wing Highlight Lines (Gold/Neon) -->
+    <path
+        android:fillColor="#FF6B9D"
+        android:pathData="M22,46 L34,48 L20,52 L32,54 Z"/>
+    <path
+        android:fillColor="#FF6B9D"
+        android:pathData="M86,46 L74,48 L88,52 L76,54 Z"/>
+
+    <!-- RPG Shield Crest (Vibrant Metallic/Purple shield) -->
+    <path
+        android:fillColor="#1B173A"
+        android:strokeColor="#7B61FF"
+        android:strokeWidth="2.5"
+        android:pathData="M54,28 L36,36 L36,54 C36,70 48,82 54,86 C60,82 72,70 72,54 L72,36 Z"/>
+
+    <!-- Golden Shield Inner Border -->
+    <path
+        android:strokeColor="#FFD700"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000"
+        android:pathData="M54,34 L42,40 L42,52 C42,64 51,74 54,77 C57,74 66,64 66,52 L66,40 Z"/>
+
+    <!-- Central Glowing Lightning / Power Core (Vibrant Gold/Energy) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M56,38 L46,54 L53,54 L50,72 L62,50 L53,50 Z"/>
+
+    <!-- Star / Sparkle Highlight (White) -->
     <path
         android:fillColor="#FFFFFF"
-        android:alpha="0.8"
-        android:pathData="M30,35 L31.5,38 L35,38 L32.5,40 L33.5,44 L30,42 L26.5,44 L27.5,40 L25,38 L28.5,38 Z"/>
+        android:pathData="M54,20 L55.5,23.5 L59,25 L55.5,26.5 L54,30 L52.5,26.5 L49,25 L52.5,23.5 Z"/>
 
-    <path
-        android:fillColor="#7B61FF"
-        android:alpha="0.9"
-        android:pathData="M78,30 L79,32.5 L81.5,32.5 L79.5,34 L80.3,37 L78,35.5 L75.7,37 L76.5,34 L74.5,32.5 L77,32.5 Z"/>
-
+    <!-- Sparkle bottom left -->
     <path
         android:fillColor="#FF6B9D"
-        android:alpha="0.7"
-        android:pathData="M25,55 L25.8,57 L28,57 L26.3,58.2 L27,60.5 L25,59.2 L23,60.5 L23.7,58.2 L22,57 L24.2,57 Z"/>
+        android:pathData="M28,74 L29,76 L31,76.5 L29,77 L28,79 L27,77 L25,76.5 L27,76 Z"/>
+
+    <!-- Sparkle bottom right -->
+    <path
+        android:fillColor="#7B61FF"
+        android:pathData="M80,74 L81,76 L83,76.5 L81,77 L80,79 L79,77 L77,76.5 L79,76 Z"/>
 </vector>

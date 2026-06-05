@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,9 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fitquest.rpg.core.domain.model.RewardCard
 import com.fitquest.rpg.ui.theme.*
@@ -47,19 +50,20 @@ fun StoreScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = viewModel::showAddDialog,
-                containerColor = NeonPurple,
-                contentColor = Color.White
+                containerColor = Color.White,
+                contentColor = Color.Black,
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add custom reward")
             }
         },
-        containerColor = DeepNavy
+        containerColor = Color.Black
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(DeepNavy)
+                .background(Color.Black)
         ) {
             // Header
             Row(
@@ -67,10 +71,17 @@ fun StoreScreen(
                     .fillMaxWidth()
                     .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column {
-                    Text("🏪 REWARD STORE", style = MaterialTheme.typography.headlineMedium, letterSpacing = 2.sp)
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("REWARD STORE", style = MaterialTheme.typography.headlineMedium, letterSpacing = 2.sp)
                     Text("Spend your earned Action Points", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 // AP Balance
@@ -84,7 +95,8 @@ fun StoreScreen(
 
             // Card grid
             val available = state.allCards.filter { !it.isRedeemed }
-            val redeemed = state.allCards.filter { it.isRedeemed }
+            val activeQuests = state.allCards.filter { it.isRedeemed && it.hasTask && !it.taskCompleted }
+            val redeemed = state.allCards.filter { it.isRedeemed && (!it.hasTask || it.taskCompleted) }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -92,10 +104,33 @@ fun StoreScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (available.isNotEmpty()) {
+                if (activeQuests.isNotEmpty()) {
                     item(span = { GridItemSpan(2) }) {
                         Text(
-                            "✨ Available Rewards",
+                            "Active Quests",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = NeonPurple,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                    items(activeQuests, key = { "q-${it.id}" }) { card ->
+                        RewardCardItem(
+                            card = card,
+                            canAfford = false,
+                            onRedeem = {},
+                            onDelete = null,
+                            isActiveQuest = true,
+                            onIncrementProgress = { viewModel.incrementQuestProgress(card) },
+                            onClaimBonus = { viewModel.claimCheatDayBonus(card) }
+                        )
+                    }
+                }
+
+                if (available.isNotEmpty()) {
+                    item(span = { GridItemSpan(2) }) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Available Rewards",
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -114,7 +149,7 @@ fun StoreScreen(
                     item(span = { GridItemSpan(2) }) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "✅ Redeemed",
+                            "Redeemed / Complete",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -147,67 +182,149 @@ private fun RewardCardItem(
     card: RewardCard,
     canAfford: Boolean,
     onRedeem: () -> Unit,
-    onDelete: (() -> Unit)?
+    onDelete: (() -> Unit)?,
+    isActiveQuest: Boolean = false,
+    onIncrementProgress: (() -> Unit)? = null,
+    onClaimBonus: (() -> Unit)? = null
 ) {
-    val shimmer = rememberInfiniteTransition(label = "cardShimmer")
-    val shimmerAlpha by shimmer.animateFloat(
-        initialValue = 0.7f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(2000), RepeatMode.Reverse),
-        label = "shimmerA"
-    )
+
 
     val borderColor = when {
-        card.isRedeemed -> SuccessGreen.copy(alpha = 0.4f)
-        canAfford -> GoldAP.copy(alpha = shimmerAlpha * 0.6f)
+        card.isRedeemed && card.taskCompleted -> SuccessGreen.copy(alpha = 0.5f)
+        card.isRedeemed && !card.taskCompleted -> Color.White.copy(alpha = 0.7f)
+        canAfford -> GoldAP.copy(alpha = 0.6f)
         else -> BorderNavy
     }
+
+    val borderStroke = BorderStroke(1.dp, borderColor)
+    val cardBg = SolidColor(CardNavy)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .alpha(if (card.isRedeemed) 0.6f else 1f),
-        colors = CardDefaults.cardColors(containerColor = CardNavy),
-        border = BorderStroke(1.dp, borderColor),
-        shape = RoundedCornerShape(16.dp)
+            .alpha(if (card.isRedeemed && !isActiveQuest) 0.5f else 1f),
+        border = borderStroke,
+        shape = RoundedCornerShape(8.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier
+                .background(cardBg)
+                .padding(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(card.emoji, fontSize = 36.sp)
+            Icon(
+                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_gift),
+                contentDescription = null,
+                tint = borderColor,
+                modifier = Modifier.size(28.dp)
+            )
             Text(
                 card.title,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             if (card.description.isNotEmpty()) {
                 Text(
                     card.description,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    maxLines = 2
+                    maxLines = 4,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
 
-            if (card.isRedeemed) {
+            if (isActiveQuest) {
+                Spacer(Modifier.height(4.dp))
+                HorizontalDivider(color = BorderNavy)
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    "QUEST ACTIVE",
+                    color = NeonPurple,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelMedium,
+                    letterSpacing = 1.sp
+                )
+
+                if (card.taskType == "COUNTER") {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Progress: ${card.taskProgress} / ${card.taskTarget}",
+                            fontWeight = FontWeight.Medium,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        IconButton(
+                            onClick = { onIncrementProgress?.invoke() },
+                            modifier = Modifier
+                                .size(28.dp)
+                                .background(Color.White, RoundedCornerShape(4.dp))
+                        ) {
+                            Text("+", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        }
+                    }
+                    if (card.taskProgress > card.taskTarget) {
+                        Text(
+                            "Overachieved: +${card.taskProgress - card.taskTarget}!",
+                            color = GoldAP,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text(
+                            "Bonus: +${(card.taskProgress - card.taskTarget) * card.overachieveXpPerCount} XP, +${(card.taskProgress - card.taskTarget) * card.overachieveApPerCount} AP",
+                            color = GoldAP,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                } else if (card.taskType == "CHEAT_DAY_ROUTINE") {
+                    Button(
+                        onClick = { onClaimBonus?.invoke() },
+                        colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Claim Routine Followed", color = Color.White, style = MaterialTheme.typography.labelMedium)
+                    }
+                    Text(
+                        "Rewards: +${card.bonusXp} XP, +${card.bonusAp} AP",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            } else if (card.isRedeemed) {
                 Text("✅ REDEEMED", color = SuccessGreen, style = MaterialTheme.typography.labelMedium, letterSpacing = 1.sp)
+                if (card.hasTask && card.taskCompleted) {
+                    Text(
+                        "Quest Completed!",
+                        color = GoldAP,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             } else {
                 Button(
                     onClick = onRedeem,
                     enabled = canAfford,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (canAfford) NeonPurple else SurfaceNavy,
-                        disabledContainerColor = SurfaceNavy
+                        containerColor = if (canAfford) Color.White else Color(0xFF141414),
+                        contentColor = if (canAfford) Color.Black else Color(0xFF666666),
+                        disabledContainerColor = Color(0xFF141414),
+                        disabledContentColor = Color(0xFF666666)
                     ),
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     Text(
                         "⚡ ${card.apCost} AP",
-                        color = if (canAfford) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -242,7 +359,9 @@ private fun AddCustomCardDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = CardNavy,
-        title = { Text("✨ Create Custom Reward", color = NeonPurple) },
+        shape = RoundedCornerShape(8.dp),
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = true),
+        title = { Text("Create Custom Reward", color = Color.White, fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -251,7 +370,12 @@ private fun AddCustomCardDialog(
                     label = { Text("Emoji") },
                     singleLine = true,
                     modifier = Modifier.width(80.dp),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = NeonPurple)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = BorderNavy,
+                        focusedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
                 )
                 OutlinedTextField(
                     value = title,
@@ -259,7 +383,12 @@ private fun AddCustomCardDialog(
                     label = { Text("Reward Title *") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = NeonPurple)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = BorderNavy,
+                        focusedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
                 )
                 OutlinedTextField(
                     value = description,
@@ -267,7 +396,12 @@ private fun AddCustomCardDialog(
                     label = { Text("Description") },
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = NeonPurple)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = BorderNavy,
+                        focusedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
                 )
                 OutlinedTextField(
                     value = apCost,
@@ -275,7 +409,12 @@ private fun AddCustomCardDialog(
                     label = { Text("AP Cost *") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = NeonPurple)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = BorderNavy,
+                        focusedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
                 )
             }
         },
@@ -286,11 +425,15 @@ private fun AddCustomCardDialog(
                         onConfirm(title, description, emoji, apCost.toIntOrNull() ?: 100)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = NeonPurple)
-            ) { Text("Add Reward") }
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                shape = RoundedCornerShape(6.dp)
+            ) { Text("Add Reward", fontWeight = FontWeight.Bold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+            ) { Text("Cancel") }
         }
     )
 }

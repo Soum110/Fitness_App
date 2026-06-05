@@ -49,16 +49,16 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `user_profile` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `age` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL NOT NULL, `weightKg` REAL NOT NULL, `fitnessLevel` TEXT NOT NULL, `primaryGoal` TEXT NOT NULL, `dietaryStyle` TEXT NOT NULL, `workoutDaysPerWeek` INTEGER NOT NULL, `wakeTimeHour` INTEGER NOT NULL, `sleepTimeHour` INTEGER NOT NULL, `onboardingComplete` INTEGER NOT NULL, `joinDateMs` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `attributes` (`type` TEXT NOT NULL, `level` INTEGER NOT NULL, `currentXp` INTEGER NOT NULL, `totalXpEarned` INTEGER NOT NULL, PRIMARY KEY(`type`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `daily_tasks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `taskType` TEXT NOT NULL, `targetAttribute` TEXT NOT NULL, `xpReward` INTEGER NOT NULL, `apReward` INTEGER NOT NULL, `sets` INTEGER, `reps` INTEGER, `durationMinutes` INTEGER, `isCompleted` INTEGER NOT NULL, `completedAtMs` INTEGER, `dateMs` INTEGER NOT NULL, `difficultyMultiplier` REAL NOT NULL)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `reward_cards` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `apCost` INTEGER NOT NULL, `emoji` TEXT NOT NULL, `isPredefined` INTEGER NOT NULL, `isRedeemed` INTEGER NOT NULL, `redeemedAtMs` INTEGER)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `reward_cards` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `apCost` INTEGER NOT NULL, `emoji` TEXT NOT NULL, `isPredefined` INTEGER NOT NULL, `isRedeemed` INTEGER NOT NULL, `redeemedAtMs` INTEGER, `hasTask` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `taskProgress` INTEGER NOT NULL, `taskTarget` INTEGER NOT NULL, `taskCompleted` INTEGER NOT NULL, `targetAttribute` TEXT NOT NULL, `bonusXp` INTEGER NOT NULL, `bonusAp` INTEGER NOT NULL, `overachieveXpPerCount` INTEGER NOT NULL, `overachieveApPerCount` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `economy` (`id` INTEGER NOT NULL, `totalActionPoints` INTEGER NOT NULL, `availableActionPoints` INTEGER NOT NULL, `totalSpent` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `longestStreak` INTEGER NOT NULL, `lastCompletionDateMs` INTEGER, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0e2351a399ade1bb0789fa9012975057')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '941bd42e2bf98d802c2235f080bca817')");
       }
 
       @Override
@@ -173,7 +173,7 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
                   + " Expected:\n" + _infoDailyTasks + "\n"
                   + " Found:\n" + _existingDailyTasks);
         }
-        final HashMap<String, TableInfo.Column> _columnsRewardCards = new HashMap<String, TableInfo.Column>(8);
+        final HashMap<String, TableInfo.Column> _columnsRewardCards = new HashMap<String, TableInfo.Column>(18);
         _columnsRewardCards.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsRewardCards.put("title", new TableInfo.Column("title", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsRewardCards.put("description", new TableInfo.Column("description", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -182,6 +182,16 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
         _columnsRewardCards.put("isPredefined", new TableInfo.Column("isPredefined", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsRewardCards.put("isRedeemed", new TableInfo.Column("isRedeemed", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsRewardCards.put("redeemedAtMs", new TableInfo.Column("redeemedAtMs", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("hasTask", new TableInfo.Column("hasTask", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("taskType", new TableInfo.Column("taskType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("taskProgress", new TableInfo.Column("taskProgress", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("taskTarget", new TableInfo.Column("taskTarget", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("taskCompleted", new TableInfo.Column("taskCompleted", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("targetAttribute", new TableInfo.Column("targetAttribute", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("bonusXp", new TableInfo.Column("bonusXp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("bonusAp", new TableInfo.Column("bonusAp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("overachieveXpPerCount", new TableInfo.Column("overachieveXpPerCount", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsRewardCards.put("overachieveApPerCount", new TableInfo.Column("overachieveApPerCount", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysRewardCards = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesRewardCards = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoRewardCards = new TableInfo("reward_cards", _columnsRewardCards, _foreignKeysRewardCards, _indicesRewardCards);
@@ -210,7 +220,7 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "0e2351a399ade1bb0789fa9012975057", "5f60177cbad8ffcc98806d233c52efcd");
+    }, "941bd42e2bf98d802c2235f080bca817", "e6dfdbc3f0a580a19f26a0404d35f0ee");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

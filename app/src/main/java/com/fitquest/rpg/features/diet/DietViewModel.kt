@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.UserRepository
 import com.fitquest.rpg.core.domain.model.*
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -25,21 +26,30 @@ data class MacroTargets(
 
 @HiltViewModel
 class DietViewModel @Inject constructor(
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
-    val uiState: StateFlow<DietUiState> = userRepo.observeProfile().map { profile ->
-        if (profile == null) return@map DietUiState()
-        val phase = profile.transformationPhase
-        val macros = computeMacros(profile)
-        DietUiState(
-            profile = profile,
-            phase = phase,
-            mealPlan = getMealPlan(profile),
-            macroTargets = macros,
-            tips = getDietTips(profile)
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DietUiState())
+    val uiState: StateFlow<DietUiState> = run {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            MutableStateFlow(DietUiState())
+        } else {
+            userRepo.observeProfile(uid).map { profile ->
+                if (profile == null) return@map DietUiState()
+                val phase = profile.transformationPhase
+                val macros = computeMacros(profile)
+                DietUiState(
+                    profile = profile,
+                    phase = phase,
+                    mealPlan = getMealPlan(profile),
+                    macroTargets = macros,
+                    tips = getDietTips(profile)
+                )
+            }.catch { emit(DietUiState()) }
+             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DietUiState())
+        }
+    }
 
     private fun computeMacros(profile: UserProfile): MacroTargets {
         // Mifflin-St Jeor BMR estimate

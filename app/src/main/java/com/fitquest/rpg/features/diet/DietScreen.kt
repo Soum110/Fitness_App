@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fitquest.rpg.core.domain.model.TransformationPhase
 import com.fitquest.rpg.ui.theme.*
@@ -32,28 +33,34 @@ fun DietScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepNavy)
+            .background(Color.Black)
             .verticalScroll(rememberScrollState())
     ) {
         // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(
-                        listOf(phaseColor.copy(alpha = 0.15f), Color.Transparent)
-                    )
-                )
                 .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 20.dp)
         ) {
             Column {
-                Text(
-                    "🥗 NUTRITION HQ",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                )
-                Spacer(Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_diet),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        "NUTRITION HQ",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
                 // Phase chip
                 Box(
                     modifier = Modifier
@@ -84,11 +91,22 @@ fun DietScreen(
 
         // Today's meal plan
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            Text(
-                "📋 TODAY'S MEAL PLAN",
-                style = MaterialTheme.typography.titleLarge,
-                letterSpacing = 2.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_diet),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    "TODAY'S MEAL PLAN",
+                    style = MaterialTheme.typography.titleLarge,
+                    letterSpacing = 2.sp
+                )
+            }
             Text(
                 state.profile?.dietaryStyle?.displayName ?: "",
                 style = MaterialTheme.typography.bodyMedium,
@@ -106,16 +124,28 @@ fun DietScreen(
 
         // Diet tips
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            Text(
-                "💡 NUTRITION TIPS",
-                style = MaterialTheme.typography.titleLarge,
-                letterSpacing = 2.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_tips),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    "NUTRITION TIPS",
+                    style = MaterialTheme.typography.titleLarge,
+                    letterSpacing = 2.sp
+                )
+            }
             Spacer(Modifier.height(12.dp))
 
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardNavy),
-                border = BorderStroke(1.dp, NeonPurple.copy(alpha = 0.3f))
+                border = BorderStroke(1.dp, BorderNavy),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -150,8 +180,8 @@ private fun MacroTargetsCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = CardNavy),
-        border = BorderStroke(1.dp, phaseColor.copy(alpha = 0.4f)),
-        shape = RoundedCornerShape(16.dp)
+        border = BorderStroke(1.dp, BorderNavy),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -246,8 +276,8 @@ private fun MealCard(meal: String, index: Int, phaseColor: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(CardNavy, RoundedCornerShape(12.dp))
-            .border(1.dp, BorderNavy, RoundedCornerShape(12.dp))
+            .background(CardNavy, RoundedCornerShape(8.dp))
+            .border(1.dp, BorderNavy, RoundedCornerShape(8.dp))
             .padding(14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top

@@ -20,9 +20,12 @@ import dagger.hilt.processor.internal.definecomponent.codegen._dagger_hilt_compo
 import hilt_aggregated_deps._com_fitquest_rpg_FitQuestApp_GeneratedInjector;
 import hilt_aggregated_deps._com_fitquest_rpg_MainActivity_GeneratedInjector;
 import hilt_aggregated_deps._com_fitquest_rpg_core_di_DatabaseModule;
+import hilt_aggregated_deps._com_fitquest_rpg_core_di_FirebaseModule;
 import hilt_aggregated_deps._com_fitquest_rpg_core_di_NetworkModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_KeyModule;
+import hilt_aggregated_deps._com_fitquest_rpg_features_auth_AuthViewModel_HiltModules_BindsModule;
+import hilt_aggregated_deps._com_fitquest_rpg_features_auth_AuthViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_dashboard_DashboardViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_dashboard_DashboardViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_diet_DietViewModel_HiltModules_BindsModule;
@@ -31,6 +34,8 @@ import hilt_aggregated_deps._com_fitquest_rpg_features_onboarding_OnboardingView
 import hilt_aggregated_deps._com_fitquest_rpg_features_onboarding_OnboardingViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_profile_ProfileViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_profile_ProfileViewModel_HiltModules_KeyModule;
+import hilt_aggregated_deps._com_fitquest_rpg_features_roadmap_RoadmapViewModel_HiltModules_BindsModule;
+import hilt_aggregated_deps._com_fitquest_rpg_features_roadmap_RoadmapViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_store_StoreViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_store_StoreViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_workout_WorkoutViewModel_HiltModules_BindsModule;
@@ -78,9 +83,12 @@ import hilt_aggregated_deps._dagger_hilt_android_internal_modules_HiltWrapper_Ac
         _com_fitquest_rpg_FitQuestApp_GeneratedInjector.class,
         _com_fitquest_rpg_MainActivity_GeneratedInjector.class,
         _com_fitquest_rpg_core_di_DatabaseModule.class,
+        _com_fitquest_rpg_core_di_FirebaseModule.class,
         _com_fitquest_rpg_core_di_NetworkModule.class,
         _com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_BindsModule.class,
         _com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_KeyModule.class,
+        _com_fitquest_rpg_features_auth_AuthViewModel_HiltModules_BindsModule.class,
+        _com_fitquest_rpg_features_auth_AuthViewModel_HiltModules_KeyModule.class,
         _com_fitquest_rpg_features_dashboard_DashboardViewModel_HiltModules_BindsModule.class,
         _com_fitquest_rpg_features_dashboard_DashboardViewModel_HiltModules_KeyModule.class,
         _com_fitquest_rpg_features_diet_DietViewModel_HiltModules_BindsModule.class,
@@ -89,6 +97,8 @@ import hilt_aggregated_deps._dagger_hilt_android_internal_modules_HiltWrapper_Ac
         _com_fitquest_rpg_features_onboarding_OnboardingViewModel_HiltModules_KeyModule.class,
         _com_fitquest_rpg_features_profile_ProfileViewModel_HiltModules_BindsModule.class,
         _com_fitquest_rpg_features_profile_ProfileViewModel_HiltModules_KeyModule.class,
+        _com_fitquest_rpg_features_roadmap_RoadmapViewModel_HiltModules_BindsModule.class,
+        _com_fitquest_rpg_features_roadmap_RoadmapViewModel_HiltModules_KeyModule.class,
         _com_fitquest_rpg_features_store_StoreViewModel_HiltModules_BindsModule.class,
         _com_fitquest_rpg_features_store_StoreViewModel_HiltModules_KeyModule.class,
         _com_fitquest_rpg_features_workout_WorkoutViewModel_HiltModules_BindsModule.class,

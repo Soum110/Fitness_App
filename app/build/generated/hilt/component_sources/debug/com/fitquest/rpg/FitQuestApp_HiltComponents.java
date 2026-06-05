@@ -1,12 +1,15 @@
 package com.fitquest.rpg;
 
 import com.fitquest.rpg.core.di.DatabaseModule;
+import com.fitquest.rpg.core.di.FirebaseModule;
 import com.fitquest.rpg.core.di.NetworkModule;
 import com.fitquest.rpg.features.attributes.AttributesViewModel_HiltModules;
+import com.fitquest.rpg.features.auth.AuthViewModel_HiltModules;
 import com.fitquest.rpg.features.dashboard.DashboardViewModel_HiltModules;
 import com.fitquest.rpg.features.diet.DietViewModel_HiltModules;
 import com.fitquest.rpg.features.onboarding.OnboardingViewModel_HiltModules;
 import com.fitquest.rpg.features.profile.ProfileViewModel_HiltModules;
+import com.fitquest.rpg.features.roadmap.RoadmapViewModel_HiltModules;
 import com.fitquest.rpg.features.store.StoreViewModel_HiltModules;
 import com.fitquest.rpg.features.workout.WorkoutViewModel_HiltModules;
 import dagger.Binds;
@@ -135,6 +138,7 @@ public final class FitQuestApp_HiltComponents {
       modules = {
           ApplicationContextModule.class,
           DatabaseModule.class,
+          FirebaseModule.class,
           ActivityRetainedCBuilderModule.class,
           ServiceCBuilderModule.class,
           HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
@@ -162,6 +166,7 @@ public final class FitQuestApp_HiltComponents {
   @Subcomponent(
       modules = {
           AttributesViewModel_HiltModules.KeyModule.class,
+          AuthViewModel_HiltModules.KeyModule.class,
           DashboardViewModel_HiltModules.KeyModule.class,
           DietViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
@@ -170,6 +175,7 @@ public final class FitQuestApp_HiltComponents {
           HiltWrapper_SavedStateHandleModule.class,
           OnboardingViewModel_HiltModules.KeyModule.class,
           ProfileViewModel_HiltModules.KeyModule.class,
+          RoadmapViewModel_HiltModules.KeyModule.class,
           StoreViewModel_HiltModules.KeyModule.class,
           WorkoutViewModel_HiltModules.KeyModule.class
       }
@@ -208,11 +214,13 @@ public final class FitQuestApp_HiltComponents {
   @Subcomponent(
       modules = {
           AttributesViewModel_HiltModules.BindsModule.class,
+          AuthViewModel_HiltModules.BindsModule.class,
           DashboardViewModel_HiltModules.BindsModule.class,
           DietViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           OnboardingViewModel_HiltModules.BindsModule.class,
           ProfileViewModel_HiltModules.BindsModule.class,
+          RoadmapViewModel_HiltModules.BindsModule.class,
           StoreViewModel_HiltModules.BindsModule.class,
           WorkoutViewModel_HiltModules.BindsModule.class
       }

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.fitquest.rpg.app-mergeDebugResources-64:/values-v24/values-v24.xml",
+            "outputFile": "com.fitquest.rpg.app-mergeDebugResources-72:/values-v24/values-v24.xml",
             "map": [
                 {
-                    "source": "/Users/soumensen/.gradle/caches/transforms-3/46444e1a9e20910f85c82fd3083bb283/transformed/appcompat-1.6.1/res/values-v24/values-v24.xml",
+                    "source": "/Users/soumensen/.gradle/caches/transforms-3/b40166b225136472482f6c7c81535723/transformed/appcompat-1.6.1/res/values-v24/values-v24.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",

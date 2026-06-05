@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.res.painterResource
 import com.fitquest.rpg.core.domain.model.*
 import com.fitquest.rpg.ui.theme.*
 import kotlin.math.cos
@@ -95,10 +96,13 @@ fun AttributeXpRing(
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = attribute.type.emoji,
-                    fontSize = 22.sp
+                Icon(
+                    painter = painterResource(id = attribute.type.iconResId()),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
                 )
+                Spacer(Modifier.height(2.dp))
                 Text(
                     text = "${attribute.level}",
                     style = MaterialTheme.typography.labelLarge,
@@ -108,22 +112,31 @@ fun AttributeXpRing(
             }
         }
 
+        val displayNameAbbr = when (attribute.type) {
+            AttributeType.STRENGTH -> "STR"
+            AttributeType.STAMINA -> "STA"
+            AttributeType.FLEXIBILITY -> "FLEX"
+            AttributeType.INTELLIGENCE -> "INT"
+            AttributeType.ENERGY -> "ENG"
+        }
         Spacer(Modifier.height(4.dp))
         Text(
-            text = attribute.type.displayName,
+            text = displayNameAbbr,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
         )
     }
 }
 
 /**
- * RPG-styled card with glow border effect.
+ * RPG-styled card with clean Vercel borders and flat background.
  */
 @Composable
 fun RpgCard(
     modifier: Modifier = Modifier,
-    glowColor: Color = NeonPurple,
+    glowColor: Color = BorderNavy,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -132,16 +145,10 @@ fun RpgCard(
     } else modifier
 
     Card(
-        modifier = cardModifier
-            .shadow(
-                elevation = 12.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = glowColor.copy(alpha = 0.3f),
-                spotColor = glowColor.copy(alpha = 0.2f)
-            ),
-        shape = RoundedCornerShape(16.dp),
+        modifier = cardModifier,
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = CardNavy),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BorderNavy)
+        border = androidx.compose.foundation.BorderStroke(1.dp, glowColor)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -151,53 +158,43 @@ fun RpgCard(
 }
 
 /**
- * Rank badge with animated shimmer.
+ * Rank badge with clean Vercel border and flat background.
  */
 @Composable
 fun RankBadge(rank: Rank, modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "rankShimmer")
-    val shimmerAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f, targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shimmerAlpha"
-    )
-
     val rankColor = Color(rank.colorHex)
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .background(
-                brush = Brush.radialGradient(
-                    listOf(rankColor.copy(alpha = shimmerAlpha * 0.2f), Color.Transparent)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
+            .background(Color.Black, RoundedCornerShape(6.dp))
             .border(
                 width = 1.dp,
-                brush = Brush.linearGradient(listOf(rankColor.copy(alpha = shimmerAlpha), rankColor.copy(0.3f))),
-                shape = RoundedCornerShape(12.dp)
+                color = rankColor.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(6.dp)
             )
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(text = rank.emoji, fontSize = 16.sp)
+            Icon(
+                painter = painterResource(id = rank.iconResId()),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp)
+            )
             Text(
                 text = rank.title.uppercase(),
                 style = MaterialTheme.typography.labelLarge,
-                color = rankColor.copy(alpha = shimmerAlpha),
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp
+                color = rankColor,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5.sp
             )
         }
     }
 }
 
 /**
- * Task list item with completion checkbox and animated strikethrough.
+ * Task list item with Vercel styling and clean completion.
  */
 @Composable
 fun TaskItem(
@@ -215,28 +212,29 @@ fun TaskItem(
 
     RpgCard(
         modifier = modifier.fillMaxWidth(),
-        glowColor = if (task.isCompleted) SuccessGreen else attributeColor
+        glowColor = if (task.isCompleted) BorderNavy else BorderNavy
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Attribute color indicator
+            // Attribute color indicator bar (flat, no alpha gradient)
             Box(
                 modifier = Modifier
-                    .width(4.dp)
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(
-                        brush = Brush.verticalGradient(
-                            listOf(attributeColor, attributeColor.copy(0.3f))
-                        )
-                    )
+                    .width(3.dp)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(1.5.dp))
+                    .background(attributeColor)
             )
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = task.taskType.icon, fontSize = 14.sp)
+                    Icon(
+                        painter = painterResource(id = task.taskType.iconResId()),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(14.dp)
+                    )
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.titleMedium,
@@ -244,7 +242,8 @@ fun TaskItem(
                             MaterialTheme.colorScheme.onSurfaceVariant
                         else
                             MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        maxLines = 1,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
                 Spacer(Modifier.height(2.dp))
@@ -253,7 +252,8 @@ fun TaskItem(
                         Text(
                             text = task.formattedVolume(),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = attributeColor
+                            color = attributeColor,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                     Text(
@@ -264,25 +264,25 @@ fun TaskItem(
                 }
             }
 
-            // Completion button
+            // Completion check circle button
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(
                         if (task.isCompleted) SuccessGreen.copy(alpha = checkAnim)
-                        else SurfaceNavy
+                        else Color.Transparent
                     )
                     .border(
-                        width = 2.dp,
+                        width = 1.5.dp,
                         color = if (task.isCompleted) SuccessGreen else BorderNavy,
                         shape = CircleShape
                     )
                     .clickable(enabled = !task.isCompleted) { onComplete() }
             ) {
                 if (task.isCompleted) {
-                    Text("✓", color = Color.White, fontWeight = FontWeight.Black)
+                    Text("✓", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
         }
@@ -294,31 +294,24 @@ fun TaskItem(
  */
 @Composable
 fun ActionPointsChip(points: Int, modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "apGlow")
-    val glow by infiniteTransition.animateFloat(
-        initialValue = 0.7f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(2000), RepeatMode.Reverse),
-        label = "apGlowAlpha"
-    )
-
     Box(
         modifier = modifier
-            .background(
-                brush = Brush.horizontalGradient(
-                    listOf(Color(0xFF5C4800), Color(0xFF7A5C00))
-                ),
-                shape = RoundedCornerShape(20.dp)
-            )
-            .border(1.dp, GoldAP.copy(alpha = glow), RoundedCornerShape(20.dp))
-            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .background(Color(0xFF0F0F00), RoundedCornerShape(6.dp))
+            .border(1.dp, GoldAP.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("⚡", fontSize = 16.sp)
+            Icon(
+                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_energy),
+                contentDescription = null,
+                tint = GoldAP,
+                modifier = Modifier.size(14.dp)
+            )
             Text(
                 text = "$points AP",
-                style = MaterialTheme.typography.titleMedium,
-                color = GoldAP.copy(alpha = glow),
-                fontWeight = FontWeight.Black
+                style = MaterialTheme.typography.labelLarge,
+                color = GoldAP,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -333,15 +326,197 @@ fun StreakBadge(streak: Int, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
-            .background(Color(0xFF3E1A00), RoundedCornerShape(12.dp))
-            .border(1.dp, Color(0xFFFF6D00).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .background(Color(0xFF140700), RoundedCornerShape(6.dp))
+            .border(1.dp, Color(0xFFFF6D00).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
-        Text("🔥", fontSize = 14.sp)
+        Icon(
+            painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_streak),
+            contentDescription = null,
+            tint = Color(0xFFFF8A65),
+            modifier = Modifier.size(12.dp)
+        )
         Text(
             text = "$streak day${if (streak != 1) "s" else ""}",
             style = MaterialTheme.typography.labelLarge,
-            color = Color(0xFFFF8A65)
+            color = Color(0xFFFF8A65),
+            fontWeight = FontWeight.Bold
         )
     }
+}
+
+/**
+ * Helper to animate progress forward and skip backward visual demotion on level up.
+ */
+@Composable
+fun rememberProgressFraction(level: Int, fraction: Float): Float {
+    var lastLevel by remember { mutableStateOf(level) }
+    val animatable = remember { Animatable(fraction) }
+
+    LaunchedEffect(level, fraction) {
+        if (level > lastLevel) {
+            animatable.animateTo(1.0f, tween(400, easing = FastOutSlowInEasing))
+            animatable.snapTo(0.0f)
+            lastLevel = level
+        } else if (level < lastLevel) {
+            animatable.snapTo(fraction)
+            lastLevel = level
+        }
+        animatable.animateTo(fraction, tween(800, easing = FastOutSlowInEasing))
+    }
+    return animatable.value
+}
+
+/**
+ * Horizontal XP slider representing an attribute, highlighting potential XP increase from today's active tasks.
+ */
+@Composable
+fun AttributeXpSlider(
+    attribute: Attribute,
+    potentialXp: Long,
+    modifier: Modifier = Modifier,
+    showName: Boolean = true
+) {
+    val attrColor = Color(attribute.type.color)
+
+    // Animate current progress
+    val currentProgress = attribute.progressFraction
+    val animCurrentProgress = rememberProgressFraction(
+        level = attribute.level,
+        fraction = currentProgress
+    )
+
+    // Calculate total potential progress (current + potential)
+    val nextLevelXp = attribute.xpForNextLevel
+    val potentialFraction = if (nextLevelXp > 0) potentialXp.toFloat() / nextLevelXp.toFloat() else 0f
+    val totalPotentialProgress = (currentProgress + potentialFraction).coerceIn(0f, 1f)
+    val animPotentialProgress = rememberProgressFraction(
+        level = attribute.level,
+        fraction = totalPotentialProgress
+    )
+
+    // Pulsing alpha for the potential gain extension
+    val infiniteTransition = rememberInfiniteTransition(label = "potentialPulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 0.55f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 6.dp)
+    ) {
+        // Emoji and label
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.width(if (showName) 80.dp else 24.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = attribute.type.iconResId()),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp)
+            )
+            if (showName) {
+                Text(
+                    text = attribute.type.displayName.take(8),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        // The Stacked Progress Bar (Background, Potential Gain, Current XP)
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(6.dp)
+                .background(Color(0xFF141414), RoundedCornerShape(3.dp))
+                .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(3.dp))
+        ) {
+            // 1. Potential Gain Layer (pulsing/flashing preview, behind current XP but stretching further)
+            if (totalPotentialProgress > currentProgress) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(animPotentialProgress)
+                        .fillMaxHeight()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                listOf(attrColor.copy(alpha = pulseAlpha), attrColor.copy(alpha = pulseAlpha * 0.3f))
+                            ),
+                            shape = RoundedCornerShape(3.dp)
+                        )
+                )
+            }
+
+            // 2. Current XP Layer (solid color)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(animCurrentProgress)
+                    .fillMaxHeight()
+                    .background(attrColor, RoundedCornerShape(3.dp))
+            )
+        }
+
+        // Level and Potential Gain Indicator
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.width(80.dp)
+        ) {
+            Text(
+                text = "Lv.${attribute.level}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = attrColor
+            )
+            if (potentialXp > 0) {
+                Text(
+                    text = " (+${potentialXp})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = NeonGold,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+fun AttributeType.iconResId(): Int = when (this) {
+    AttributeType.STRENGTH -> com.fitquest.rpg.R.drawable.ic_strength
+    AttributeType.FLEXIBILITY -> com.fitquest.rpg.R.drawable.ic_flexibility
+    AttributeType.STAMINA -> com.fitquest.rpg.R.drawable.ic_stamina
+    AttributeType.ENERGY -> com.fitquest.rpg.R.drawable.ic_energy
+    AttributeType.INTELLIGENCE -> com.fitquest.rpg.R.drawable.ic_intelligence
+}
+
+fun TaskType.iconResId(): Int = when (this) {
+    TaskType.WORKOUT -> com.fitquest.rpg.R.drawable.ic_strength
+    TaskType.CARDIO -> com.fitquest.rpg.R.drawable.ic_stamina
+    TaskType.STRETCH -> com.fitquest.rpg.R.drawable.ic_flexibility
+    TaskType.DIET -> com.fitquest.rpg.R.drawable.ic_diet
+    TaskType.HABIT -> com.fitquest.rpg.R.drawable.ic_energy
+    TaskType.READING -> com.fitquest.rpg.R.drawable.ic_reading
+    TaskType.MEDITATION -> com.fitquest.rpg.R.drawable.ic_meditation
+}
+
+fun Rank.iconResId(): Int = when (this) {
+    Rank.BRONZE_RECRUIT -> com.fitquest.rpg.R.drawable.ic_tier_bronze
+    Rank.IRON_SOLDIER -> com.fitquest.rpg.R.drawable.ic_tier_iron
+    Rank.STEEL_WARRIOR -> com.fitquest.rpg.R.drawable.ic_tier_steel
+    Rank.CRYSTAL_KNIGHT -> com.fitquest.rpg.R.drawable.ic_tier_crystal
+    Rank.DIAMOND_SENTINEL -> com.fitquest.rpg.R.drawable.ic_tier_diamond
+    Rank.GOLD_SHADOW -> com.fitquest.rpg.R.drawable.ic_tier_gold
+    Rank.PLATINUM_HUNTER -> com.fitquest.rpg.R.drawable.ic_tier_platinum
+    Rank.MYTHIC_RAIDER -> com.fitquest.rpg.R.drawable.ic_tier_mythic
+    Rank.SHADOW_MONARCH -> com.fitquest.rpg.R.drawable.ic_tier_monarch
+    Rank.ARISE -> com.fitquest.rpg.R.drawable.ic_tier_arise
 }

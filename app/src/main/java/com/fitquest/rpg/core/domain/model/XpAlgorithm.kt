@@ -26,7 +26,7 @@ object XpAlgorithm {
     fun xpRequiredForLevel(level: Int): Long {
         if (level >= MAX_LEVEL) return Long.MAX_VALUE
         val l = level.toDouble()
-        return (100.0 * l * ln(l + 1.0) * 1.5).toLong().coerceAtLeast(50L)
+        return (100.0 * Math.pow(l, 1.4) * ln(l + 1.0)).toLong().coerceAtLeast(50L)
     }
 
     /**

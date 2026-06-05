@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <!-- Bowl Left Outer (Dark Shadow) -->
+  <path
+      android:fillColor="#2E7D32"
+      android:pathData="M2,12c0,5 4,9 9,9V12H2z"/>
+  <!-- Bowl Right Outer (Light Highlight) -->
+  <path
+      android:fillColor="#81C784"
+      android:pathData="M12,12v9c5,0 9,-4 9,-9H12z"/>
+
+  <!-- Bowl Inner Liquid Left (Very Dark Shadow) -->
+  <path
+      android:fillColor="#1B5E20"
+      android:pathData="M2,12c2,2 6,2 9,1V12H2z"/>
+  <!-- Bowl Inner Liquid Right (Light Green) -->
+  <path
+      android:fillColor="#C8E6C9"
+      android:pathData="M12,12v1c3,1 7,1 9,-1H12z"/>
+
+  <!-- Leaf Left Half (Medium Green) -->
+  <path
+      android:fillColor="#4CAF50"
+      android:pathData="M12,3L8,7.5h4z"/>
+  <!-- Leaf Right Half (Bright Green) -->
+  <path
+      android:fillColor="#A5D6A7"
+      android:pathData="M12,3v4.5h4z"/>
+  <!-- Leaf Stem (Shadow) -->
+  <path
+      android:fillColor="#1B5E20"
+      android:pathData="M11.5,7.5v4.5h1V7.5h-1z"/>
+</vector>

@@ -2,6 +2,7 @@ package com.fitquest.rpg.core.data.repository;
 
 import android.content.Context;
 import com.fitquest.rpg.core.data.local.dao.RewardCardDao;
+import com.fitquest.rpg.core.data.remote.FirestoreRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -26,25 +27,29 @@ import javax.inject.Provider;
 public final class RewardCardRepository_Factory implements Factory<RewardCardRepository> {
   private final Provider<RewardCardDao> cardDaoProvider;
 
+  private final Provider<FirestoreRepository> firestoreRepoProvider;
+
   private final Provider<Context> contextProvider;
 
   public RewardCardRepository_Factory(Provider<RewardCardDao> cardDaoProvider,
-      Provider<Context> contextProvider) {
+      Provider<FirestoreRepository> firestoreRepoProvider, Provider<Context> contextProvider) {
     this.cardDaoProvider = cardDaoProvider;
+    this.firestoreRepoProvider = firestoreRepoProvider;
     this.contextProvider = contextProvider;
   }
 
   @Override
   public RewardCardRepository get() {
-    return newInstance(cardDaoProvider.get(), contextProvider.get());
+    return newInstance(cardDaoProvider.get(), firestoreRepoProvider.get(), contextProvider.get());
   }
 
   public static RewardCardRepository_Factory create(Provider<RewardCardDao> cardDaoProvider,
-      Provider<Context> contextProvider) {
-    return new RewardCardRepository_Factory(cardDaoProvider, contextProvider);
+      Provider<FirestoreRepository> firestoreRepoProvider, Provider<Context> contextProvider) {
+    return new RewardCardRepository_Factory(cardDaoProvider, firestoreRepoProvider, contextProvider);
   }
 
-  public static RewardCardRepository newInstance(RewardCardDao cardDao, Context context) {
-    return new RewardCardRepository(cardDao, context);
+  public static RewardCardRepository newInstance(RewardCardDao cardDao,
+      FirestoreRepository firestoreRepo, Context context) {
+    return new RewardCardRepository(cardDao, firestoreRepo, context);
   }
 }

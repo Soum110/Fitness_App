@@ -102,20 +102,40 @@ fun DailyTask.toEntity() = DailyTaskEntity(
 
 @Entity(tableName = "reward_cards")
 data class RewardCardEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+    @PrimaryKey val id: Long = 0L,
     val title: String,
     val description: String = "",
     val apCost: Int,
     val emoji: String = "🎁",
     val isPredefined: Boolean = true,
     val isRedeemed: Boolean = false,
-    val redeemedAtMs: Long? = null
+    val redeemedAtMs: Long? = null,
+    val hasTask: Boolean = false,
+    val taskType: String = "NONE",
+    val taskProgress: Int = 0,
+    val taskTarget: Int = 1,
+    val taskCompleted: Boolean = false,
+    val targetAttribute: String = "INTELLIGENCE",
+    val bonusXp: Long = 0L,
+    val bonusAp: Int = 0,
+    val overachieveXpPerCount: Long = 0L,
+    val overachieveApPerCount: Int = 0
 ) {
     fun toDomain() = RewardCard(
         id = id, title = title, description = description,
         apCost = apCost, emoji = emoji,
         isPredefined = isPredefined, isRedeemed = isRedeemed,
-        redeemedAtMs = redeemedAtMs
+        redeemedAtMs = redeemedAtMs,
+        hasTask = hasTask,
+        taskType = taskType,
+        taskProgress = taskProgress,
+        taskTarget = taskTarget,
+        taskCompleted = taskCompleted,
+        targetAttribute = try { AttributeType.valueOf(targetAttribute) } catch(e: Exception) { AttributeType.INTELLIGENCE },
+        bonusXp = bonusXp,
+        bonusAp = bonusAp,
+        overachieveXpPerCount = overachieveXpPerCount,
+        overachieveApPerCount = overachieveApPerCount
     )
 }
 
@@ -123,7 +143,17 @@ fun RewardCard.toEntity() = RewardCardEntity(
     id = id, title = title, description = description,
     apCost = apCost, emoji = emoji,
     isPredefined = isPredefined, isRedeemed = isRedeemed,
-    redeemedAtMs = redeemedAtMs
+    redeemedAtMs = redeemedAtMs,
+    hasTask = hasTask,
+    taskType = taskType,
+    taskProgress = taskProgress,
+    taskTarget = taskTarget,
+    taskCompleted = taskCompleted,
+    targetAttribute = targetAttribute.name,
+    bonusXp = bonusXp,
+    bonusAp = bonusAp,
+    overachieveXpPerCount = overachieveXpPerCount,
+    overachieveApPerCount = overachieveApPerCount
 )
 
 @Entity(tableName = "economy")

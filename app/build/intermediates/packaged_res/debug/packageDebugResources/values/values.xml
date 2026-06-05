@@ -4,6 +4,12 @@
     <color name="pink_accent">#FF6B9D</color>
     <color name="purple_primary">#7B61FF</color>
     <string name="app_name">FitQuest: Shadow Rising</string>
+    <string name="gcm_defaultSenderId" translatable="false">1056430615066</string>
+    <string name="google_api_key" translatable="false">AIzaSyBduD5-Dd_dNEeCIMhVXr3Lp7qshOsSCnk</string>
+    <string name="google_app_id" translatable="false">1:1056430615066:android:7015468d38c95c9f53ffa3</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBduD5-Dd_dNEeCIMhVXr3Lp7qshOsSCnk</string>
+    <string name="google_storage_bucket" translatable="false">fitquestrpg-c9294.firebasestorage.app</string>
+    <string name="project_id" translatable="false">fitquestrpg-c9294</string>
     <style name="Theme.FitQuestRPG" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:statusBarColor">@android:color/transparent</item>

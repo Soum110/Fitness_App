@@ -1,0 +1,59 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <!-- Bar Top Half (Highlight) -->
+  <path
+      android:fillColor="#FF8A80"
+      android:pathData="M6,11h12v1H6z"/>
+  <!-- Bar Bottom Half (Shadow) -->
+  <path
+      android:fillColor="#D32F2F"
+      android:pathData="M6,12h12v1.5H6z"/>
+  
+  <!-- Left Collar (Highlight) -->
+  <path
+      android:fillColor="#FFCDD2"
+      android:pathData="M5,9.5h1v5H5z"/>
+  <!-- Right Collar (Highlight) -->
+  <path
+      android:fillColor="#FFCDD2"
+      android:pathData="M18,9.5h1v5h-1z"/>
+
+  <!-- Left Inner Plate Top (Highlight) -->
+  <path
+      android:fillColor="#FF5252"
+      android:pathData="M3,8.5 L5.5,5.5 L6,5.5 L6,12 L3,12 Z"/>
+  <!-- Left Inner Plate Bottom (Shadow) -->
+  <path
+      android:fillColor="#D32F2F"
+      android:pathData="M3,12 L6,12 L6,18.5 L5.5,18.5 L3,15.5 Z"/>
+
+  <!-- Left Outer Plate Top (Bright Highlight) -->
+  <path
+      android:fillColor="#FF8A80"
+      android:pathData="M1,9.5 L3,6.5 L4.5,6.5 L4.5,12 L1,12 Z"/>
+  <!-- Left Outer Plate Bottom (Dark Shadow) -->
+  <path
+      android:fillColor="#B71C1C"
+      android:pathData="M1,12 L4.5,12 L4.5,17.5 L3,17.5 L1,14.5 Z"/>
+
+  <!-- Right Inner Plate Top (Highlight) -->
+  <path
+      android:fillColor="#FF5252"
+      android:pathData="M18,12 L18,5.5 L18.5,5.5 L21,8.5 L18,12 Z"/>
+  <!-- Right Inner Plate Bottom (Shadow) -->
+  <path
+      android:fillColor="#D32F2F"
+      android:pathData="M18,12 L21,12 L21,15.5 L18.5,18.5 L18,18.5 Z"/>
+
+  <!-- Right Outer Plate Top (Bright Highlight) -->
+  <path
+      android:fillColor="#FF8A80"
+      android:pathData="M19.5,12 L19.5,6.5 L21,6.5 L23,9.5 L19.5,12 Z"/>
+  <!-- Right Outer Plate Bottom (Dark Shadow) -->
+  <path
+      android:fillColor="#B71C1C"
+      android:pathData="M19.5,12 L23,12 L23,14.5 L21,17.5 L19.5,17.5 Z"/>
+</vector>

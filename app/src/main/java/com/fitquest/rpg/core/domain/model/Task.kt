@@ -47,7 +47,17 @@ data class RewardCard(
     val emoji: String = "🎁",
     val isPredefined: Boolean = true,
     val isRedeemed: Boolean = false,
-    val redeemedAtMs: Long? = null
+    val redeemedAtMs: Long? = null,
+    val hasTask: Boolean = false,
+    val taskType: String = "NONE", // NONE, COUNTER, CHEAT_DAY_ROUTINE
+    val taskProgress: Int = 0,
+    val taskTarget: Int = 1,
+    val taskCompleted: Boolean = false,
+    val targetAttribute: AttributeType = AttributeType.INTELLIGENCE,
+    val bonusXp: Long = 0L,
+    val bonusAp: Int = 0,
+    val overachieveXpPerCount: Long = 0L,
+    val overachieveApPerCount: Int = 0
 )
 
 /**

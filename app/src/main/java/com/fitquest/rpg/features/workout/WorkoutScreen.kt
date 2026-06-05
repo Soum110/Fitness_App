@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,6 +28,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
+import com.google.firebase.auth.FirebaseAuth
+
 // ─── ViewModel ──────────────────────────────────────────────────────────────
 
 data class WorkoutUiState(
@@ -39,25 +42,35 @@ data class WorkoutUiState(
 @HiltViewModel
 class WorkoutViewModel @Inject constructor(
     private val taskRepo: TaskRepository,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
-    val uiState: StateFlow<WorkoutUiState> = combine(
-        taskRepo.observeTodaysTasks(),
-        userRepo.observeProfile()
-    ) { tasks, profile ->
-        WorkoutUiState(
-            workoutTasks = tasks.filter {
-                it.taskType == TaskType.WORKOUT || it.taskType == TaskType.CARDIO || it.taskType == TaskType.STRETCH
-            },
-            weekNumber = profile?.trainingWeekNumber ?: 1,
-            phaseDescription = profile?.let {
-                ProgressiveOverloadEngine.weekPhaseDescription(it.trainingWeekNumber)
-            } ?: "",
-            isLoading = false
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WorkoutUiState())
+    val uiState: StateFlow<WorkoutUiState> = run {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            MutableStateFlow(WorkoutUiState(isLoading = false))
+        } else {
+            combine(
+                taskRepo.observeTodaysTasks(uid),
+                userRepo.observeProfile(uid)
+            ) { tasks, profile ->
+                WorkoutUiState(
+                    workoutTasks = tasks.filter {
+                        it.taskType == TaskType.WORKOUT || it.taskType == TaskType.CARDIO || it.taskType == TaskType.STRETCH
+                    },
+                    weekNumber = profile?.trainingWeekNumber ?: 1,
+                    phaseDescription = profile?.let {
+                        ProgressiveOverloadEngine.weekPhaseDescription(it.trainingWeekNumber)
+                    } ?: "",
+                    isLoading = false
+                )
+            }.catch { emit(WorkoutUiState(isLoading = false)) }
+             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WorkoutUiState())
+        }
+    }
 }
+
 
 // ─── Screen ─────────────────────────────────────────────────────────────────
 
@@ -71,23 +84,31 @@ fun WorkoutScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepNavy)
+            .background(Color.Black)
     ) {
         // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(listOf(Color(0xFF1A0A0A), Color.Transparent))
-                )
                 .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 16.dp)
         ) {
-            Text(
-                "🏋️ TODAY'S WORKOUT",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_strength),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(28.dp)
+                )
+                Text(
+                    "TODAY'S WORKOUT",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                )
+            }
             Text(
                 "Week ${state.weekNumber} — ${state.phaseDescription}",
                 style = MaterialTheme.typography.bodyMedium,
@@ -136,7 +157,23 @@ fun WorkoutScreen(
                 item {
                     // Rest timer info card
                     RpgCard(glowColor = Color(0xFF42A5F5)) {
-                        Text("⏱️ REST BETWEEN SETS", style = MaterialTheme.typography.labelLarge, color = Color(0xFF42A5F5), letterSpacing = 2.sp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_timer),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                "REST BETWEEN SETS",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color(0xFF42A5F5),
+                                letterSpacing = 2.sp
+                            )
+                        }
                         Spacer(Modifier.height(6.dp))
                         Text(
                             "Compound movements (squats, rows): 2–3 min\nIsolation movements (curls, raises): 60–90 sec\nCardio intervals: 30–60 sec",
@@ -159,10 +196,10 @@ private fun CycleWeekChip(week: String, label: String, isActive: Boolean, color:
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    if (isActive) color.copy(0.3f) else Color.Transparent,
-                    RoundedCornerShape(8.dp)
+                    if (isActive) color.copy(0.15f) else Color.Transparent,
+                    RoundedCornerShape(6.dp)
                 )
-                .border(1.dp, if (isActive) color else BorderNavy, RoundedCornerShape(8.dp))
+                .border(1.dp, if (isActive) color else BorderNavy, RoundedCornerShape(6.dp))
         ) {
             Text(week, color = if (isActive) color else MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold, fontSize = 12.sp)
         }

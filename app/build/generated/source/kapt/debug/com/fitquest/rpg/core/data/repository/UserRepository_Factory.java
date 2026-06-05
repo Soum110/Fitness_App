@@ -4,6 +4,7 @@ import android.content.Context;
 import com.fitquest.rpg.core.data.local.dao.AttributeDao;
 import com.fitquest.rpg.core.data.local.dao.EconomyDao;
 import com.fitquest.rpg.core.data.local.dao.UserProfileDao;
+import com.fitquest.rpg.core.data.remote.FirestoreRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -32,30 +33,33 @@ public final class UserRepository_Factory implements Factory<UserRepository> {
 
   private final Provider<EconomyDao> economyDaoProvider;
 
+  private final Provider<FirestoreRepository> firestoreRepoProvider;
+
   private final Provider<Context> contextProvider;
 
   public UserRepository_Factory(Provider<UserProfileDao> profileDaoProvider,
       Provider<AttributeDao> attributeDaoProvider, Provider<EconomyDao> economyDaoProvider,
-      Provider<Context> contextProvider) {
+      Provider<FirestoreRepository> firestoreRepoProvider, Provider<Context> contextProvider) {
     this.profileDaoProvider = profileDaoProvider;
     this.attributeDaoProvider = attributeDaoProvider;
     this.economyDaoProvider = economyDaoProvider;
+    this.firestoreRepoProvider = firestoreRepoProvider;
     this.contextProvider = contextProvider;
   }
 
   @Override
   public UserRepository get() {
-    return newInstance(profileDaoProvider.get(), attributeDaoProvider.get(), economyDaoProvider.get(), contextProvider.get());
+    return newInstance(profileDaoProvider.get(), attributeDaoProvider.get(), economyDaoProvider.get(), firestoreRepoProvider.get(), contextProvider.get());
   }
 
   public static UserRepository_Factory create(Provider<UserProfileDao> profileDaoProvider,
       Provider<AttributeDao> attributeDaoProvider, Provider<EconomyDao> economyDaoProvider,
-      Provider<Context> contextProvider) {
-    return new UserRepository_Factory(profileDaoProvider, attributeDaoProvider, economyDaoProvider, contextProvider);
+      Provider<FirestoreRepository> firestoreRepoProvider, Provider<Context> contextProvider) {
+    return new UserRepository_Factory(profileDaoProvider, attributeDaoProvider, economyDaoProvider, firestoreRepoProvider, contextProvider);
   }
 
   public static UserRepository newInstance(UserProfileDao profileDao, AttributeDao attributeDao,
-      EconomyDao economyDao, Context context) {
-    return new UserRepository(profileDao, attributeDao, economyDao, context);
+      EconomyDao economyDao, FirestoreRepository firestoreRepo, Context context) {
+    return new UserRepository(profileDao, attributeDao, economyDao, firestoreRepo, context);
   }
 }

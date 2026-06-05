@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1056430615066",
+    "project_id": "fitquestrpg-c9294",
+    "storage_bucket": "fitquestrpg-c9294.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056430615066:android:7015468d38c95c9f53ffa3",
+        "android_client_info": {
+          "package_name": "com.fitquest.rpg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBduD5-Dd_dNEeCIMhVXr3Lp7qshOsSCnk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

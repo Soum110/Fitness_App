@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.painterResource
 import com.fitquest.rpg.core.domain.model.*
 import com.fitquest.rpg.ui.theme.*
 
@@ -30,9 +31,7 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(listOf(Color(0xFF0A0620), DeepNavy))
-            )
+            .background(Color.Black)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
@@ -40,8 +39,8 @@ fun OnboardingScreen(
             LinearProgressIndicator(
                 progress = { (state.step + 1f) / viewModel.totalSteps },
                 modifier = Modifier.fillMaxWidth(),
-                color = NeonPurple,
-                trackColor = NeonPurple.copy(alpha = 0.2f)
+                color = Color.White,
+                trackColor = Color(0xFF141414)
             )
 
             Spacer(Modifier.height(24.dp))
@@ -50,7 +49,7 @@ fun OnboardingScreen(
             Text(
                 text = "STEP ${state.step + 1} OF ${viewModel.totalSteps}",
                 style = MaterialTheme.typography.labelMedium,
-                color = NeonPurple,
+                color = Color.White,
                 modifier = Modifier.padding(horizontal = 24.dp),
                 letterSpacing = 3.sp
             )
@@ -90,8 +89,9 @@ fun OnboardingScreen(
                     OutlinedButton(
                         onClick = viewModel::prevStep,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonPurple),
-                        border = BorderStroke(1.dp, NeonPurple)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                        border = BorderStroke(1.dp, BorderNavy),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Text("← Back")
                     }
@@ -106,13 +106,14 @@ fun OnboardingScreen(
                         }
                     },
                     modifier = Modifier.weight(if (state.step > 0) 2f else 1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = NeonPurple),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                    shape = RoundedCornerShape(8.dp),
                     enabled = !state.isSaving
                 ) {
                     if (state.isSaving) {
-                        CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        CircularProgressIndicator(Modifier.size(20.dp), color = Color.Black, strokeWidth = 2.dp)
                     } else {
-                        Text(if (state.step == viewModel.totalSteps - 1) "🚀 Begin My Journey" else "Next →")
+                        Text(if (state.step == viewModel.totalSteps - 1) "🚀 Begin My Journey" else "Next →", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -130,7 +131,12 @@ private fun Step0Welcome(state: OnboardingState, vm: OnboardingViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("⚔️", fontSize = 72.sp)
+        Icon(
+            painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(72.dp)
+        )
         Spacer(Modifier.height(16.dp))
         Text(
             "ARISE",
@@ -142,7 +148,7 @@ private fun Step0Welcome(state: OnboardingState, vm: OnboardingViewModel) {
         Text(
             "FitQuest: Shadow Rising",
             style = MaterialTheme.typography.headlineSmall,
-            color = NeonPurple,
+            color = Color.White,
             letterSpacing = 2.sp
         )
         Spacer(Modifier.height(32.dp))
@@ -303,11 +309,12 @@ private fun Step4Schedule(state: OnboardingState, vm: OnboardingViewModel) {
         // Summary card
         Card(
             colors = CardDefaults.cardColors(containerColor = SurfaceNavy),
-            border = BorderStroke(1.dp, NeonPurple.copy(alpha = 0.3f))
+            border = BorderStroke(1.dp, BorderNavy),
+            shape = RoundedCornerShape(8.dp)
         ) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("🎮 Your Profile Preview", style = MaterialTheme.typography.titleMedium, color = NeonPurple)
-                Divider(color = BorderNavy, modifier = Modifier.padding(vertical = 8.dp))
+                Text("Your Profile Preview", style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                HorizontalDivider(color = BorderNavy, modifier = Modifier.padding(vertical = 8.dp))
                 ProfileSummaryRow("Fitness Level", state.fitnessLevel.displayName)
                 ProfileSummaryRow("Goal", state.primaryGoal.displayName)
                 ProfileSummaryRow("Diet", state.dietaryStyle.displayName)
@@ -325,7 +332,7 @@ private fun LabeledSlider(label: String, value: Float, min: Float, max: Float, o
             value = value,
             onValueChange = onChanged,
             valueRange = min..max,
-            colors = SliderDefaults.colors(thumbColor = NeonPurple, activeTrackColor = NeonPurple)
+            colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Color.White)
         )
     }
 }
@@ -336,12 +343,13 @@ private fun OptionCard(selected: Boolean, title: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) NeonPurple.copy(alpha = 0.2f) else CardNavy
+            containerColor = if (selected) Color(0xFF141414) else CardNavy
         ),
         border = BorderStroke(
-            width = if (selected) 2.dp else 1.dp,
-            color = if (selected) NeonPurple else BorderNavy
+            width = 1.dp,
+            color = if (selected) Color.White else BorderNavy
         )
     ) {
         Row(
@@ -350,7 +358,7 @@ private fun OptionCard(selected: Boolean, title: String, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-            if (selected) Text("✓", color = NeonPurple, fontWeight = FontWeight.Bold)
+            if (selected) Text("✓", color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }

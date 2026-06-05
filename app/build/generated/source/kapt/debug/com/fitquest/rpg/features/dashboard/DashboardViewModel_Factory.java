@@ -3,6 +3,7 @@ package com.fitquest.rpg.features.dashboard;
 import com.fitquest.rpg.core.data.repository.RewardCardRepository;
 import com.fitquest.rpg.core.data.repository.TaskRepository;
 import com.fitquest.rpg.core.data.repository.UserRepository;
+import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -31,25 +32,30 @@ public final class DashboardViewModel_Factory implements Factory<DashboardViewMo
 
   private final Provider<RewardCardRepository> cardRepoProvider;
 
+  private final Provider<FirebaseAuth> authProvider;
+
   public DashboardViewModel_Factory(Provider<UserRepository> userRepoProvider,
-      Provider<TaskRepository> taskRepoProvider, Provider<RewardCardRepository> cardRepoProvider) {
+      Provider<TaskRepository> taskRepoProvider, Provider<RewardCardRepository> cardRepoProvider,
+      Provider<FirebaseAuth> authProvider) {
     this.userRepoProvider = userRepoProvider;
     this.taskRepoProvider = taskRepoProvider;
     this.cardRepoProvider = cardRepoProvider;
+    this.authProvider = authProvider;
   }
 
   @Override
   public DashboardViewModel get() {
-    return newInstance(userRepoProvider.get(), taskRepoProvider.get(), cardRepoProvider.get());
+    return newInstance(userRepoProvider.get(), taskRepoProvider.get(), cardRepoProvider.get(), authProvider.get());
   }
 
   public static DashboardViewModel_Factory create(Provider<UserRepository> userRepoProvider,
-      Provider<TaskRepository> taskRepoProvider, Provider<RewardCardRepository> cardRepoProvider) {
-    return new DashboardViewModel_Factory(userRepoProvider, taskRepoProvider, cardRepoProvider);
+      Provider<TaskRepository> taskRepoProvider, Provider<RewardCardRepository> cardRepoProvider,
+      Provider<FirebaseAuth> authProvider) {
+    return new DashboardViewModel_Factory(userRepoProvider, taskRepoProvider, cardRepoProvider, authProvider);
   }
 
   public static DashboardViewModel newInstance(UserRepository userRepo, TaskRepository taskRepo,
-      RewardCardRepository cardRepo) {
-    return new DashboardViewModel(userRepo, taskRepo, cardRepo);
+      RewardCardRepository cardRepo, FirebaseAuth auth) {
+    return new DashboardViewModel(userRepo, taskRepo, cardRepo, auth);
   }
 }

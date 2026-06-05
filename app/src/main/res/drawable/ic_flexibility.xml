@@ -1,0 +1,54 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <!-- Left Head Half (Shadow) -->
+  <path
+      android:fillColor="#1B5E20"
+      android:pathData="M12,1c-1.38,0 -2.5,1.12 -2.5,2.5c0,1.38 1.12,2.5 2.5,2.5V1z"/>
+  <!-- Right Head Half (Highlight) -->
+  <path
+      android:fillColor="#81C784"
+      android:pathData="M12,1v5c1.38,0 2.5,-1.12 2.5,-2.5c0,-1.38 -1.12,-2.5 -2.5,-2.5z"/>
+  <!-- Head Shine (White) -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M12.5,2c0.28,0 0.5,0.22 0.5,0.5s-0.22,0.5 -0.5,0.5s-0.5,-0.22 -0.5,-0.5s0.22,-0.5 0.5,-0.5z"/>
+
+  <!-- Left Body Arch (Medium Green Shadow) -->
+  <path
+      android:fillColor="#2E7D32"
+      android:pathData="M5,19h2v-4.5C7,13.12 8.12,12 9.5,12V10C7.02,10 5,12.02 5,14.5V19z"/>
+  <!-- Right Body Arch (Light Green Highlight) -->
+  <path
+      android:fillColor="#81C784"
+      android:pathData="M17,14.5V19h2v-4.5c0,-2.48 -2.02,-4.5 -4.5,-4.5V12c1.38,0 2.5,1.12 2.5,2.5z"/>
+
+  <!-- Center Arch Top Facet (Bright Green Highlight) -->
+  <path
+      android:fillColor="#A5D6A7"
+      android:pathData="M9.5,12h5V10h-5Z"/>
+  <!-- Center Arch Under Facet (Dark Green Shadow) -->
+  <path
+      android:fillColor="#1B5E20"
+      android:pathData="M9.5,13h5v-1h-5Z"/>
+
+  <!-- Left Arm (Highlight) -->
+  <path
+      android:fillColor="#4CAF50"
+      android:pathData="M8.5,13L6.5,19h1L10,13Z"/>
+  <!-- Right Arm (Shadow) -->
+  <path
+      android:fillColor="#1B5E20"
+      android:pathData="M15.5,13L17.5,19h-1L14,13Z"/>
+
+  <!-- Ground Line Left (Dark) -->
+  <path
+      android:fillColor="#1B5E20"
+      android:pathData="M3,21h9v2H3v-2z"/>
+  <!-- Ground Line Right (Light) -->
+  <path
+      android:fillColor="#81C784"
+      android:pathData="M12,21h9v2h-9v-2z"/>
+</vector>

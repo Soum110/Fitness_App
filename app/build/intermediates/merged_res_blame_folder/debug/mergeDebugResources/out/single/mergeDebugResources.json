@@ -1,62 +1,170 @@
 [
     {
-        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-66:/xml_data_extraction_rules.xml.flat",
-        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-68:/xml/data_extraction_rules.xml"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_gift.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_gift.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-xxxhdpi/ic_launcher_round.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-66:/xml_backup_rules.xml.flat",
-        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-68:/xml/backup_rules.xml"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_mythic.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_mythic.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.fitquest.rpg.app-main-68:/drawable/ic_launcher_foreground.xml"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-hdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_steel.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_steel.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-xxhdpi/ic_launcher.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_meditation.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_meditation.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-mdpi_ic_launcher_round.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-mdpi/ic_launcher_round.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-xxxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-xxxhdpi_ic_launcher.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-xxxhdpi/ic_launcher.png"
+        "merged": "com.fitquest.rpg.app-debug-74:/drawable_ic_intelligence.xml.flat",
+        "source": "com.fitquest.rpg.app-main-76:/drawable/ic_intelligence.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-xhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-xxhdpi_ic_launcher_round.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-xxhdpi/ic_launcher_round.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-hdpi/ic_launcher.png"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-xhdpi_ic_launcher_round.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-xhdpi/ic_launcher_round.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tips.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tips.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-xhdpi_ic_launcher.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-xhdpi/ic_launcher.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_platinum.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_platinum.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-mdpi_ic_launcher.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-mdpi/ic_launcher.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-hdpi_ic_launcher_round.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-hdpi/ic_launcher_round.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_diet.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_diet.xml"
     },
     {
-        "merged": "com.fitquest.rpg.app-debug-66:/mipmap-hdpi_ic_launcher.png.flat",
-        "source": "com.fitquest.rpg.app-main-68:/mipmap-hdpi/ic_launcher.png"
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_timer.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_timer.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_streak.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_streak.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_monarch.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_monarch.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-xxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_stamina.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_stamina.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_flexibility.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_flexibility.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_iron.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_iron.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_energy.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_energy.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_reading.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_reading.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_crystal.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_crystal.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/xml_backup_rules.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_profile.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_profile.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_bronze.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_bronze.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/xml_data_extraction_rules.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.fitquest.rpg.app-debug-74:/drawable_ic_energy.xml.flat",
+        "source": "com.fitquest.rpg.app-main-76:/drawable/ic_energy.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_quest.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_quest.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_gold.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_gold.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_intelligence.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_intelligence.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/mipmap-xhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_diamond.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_diamond.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_rank.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_rank.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_tier_arise.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_tier_arise.xml"
+    },
+    {
+        "merged": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-debug-74:/drawable_ic_strength.xml.flat",
+        "source": "/Users/soumensen/.gradle/daemon/8.5/com.fitquest.rpg.app-main-76:/drawable/ic_strength.xml"
     }
 ]

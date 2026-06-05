@@ -175,7 +175,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
 
   @Override
   public Object insertAll(final List<DailyTaskEntity> tasks,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -189,11 +189,11 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object update(final DailyTaskEntity task, final Continuation<? super Unit> $completion) {
+  public Object update(final DailyTaskEntity task, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -207,12 +207,12 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object deleteTasksForDay(final long startOfDay, final long endOfDay,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg2) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -235,7 +235,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           __preparedStmtOfDeleteTasksForDay.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
@@ -349,7 +349,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
   }
 
   @Override
-  public Object getTask(final long id, final Continuation<? super DailyTaskEntity> $completion) {
+  public Object getTask(final long id, final Continuation<? super DailyTaskEntity> arg1) {
     final String _sql = "SELECT * FROM daily_tasks WHERE id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -449,12 +449,12 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object countCompletedTasksForDay(final long startOfDay, final long endOfDay,
-      final Continuation<? super Integer> $completion) {
+      final Continuation<? super Integer> arg2) {
     final String _sql = "SELECT COUNT(*) FROM daily_tasks WHERE dateMs >= ? AND dateMs < ? AND isCompleted = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
     int _argIndex = 1;
@@ -486,12 +486,12 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
   public Object countTotalTasksForDay(final long startOfDay, final long endOfDay,
-      final Continuation<? super Integer> $completion) {
+      final Continuation<? super Integer> arg2) {
     final String _sql = "SELECT COUNT(*) FROM daily_tasks WHERE dateMs >= ? AND dateMs < ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
     int _argIndex = 1;
@@ -523,7 +523,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @NonNull

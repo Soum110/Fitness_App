@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.UserRepository
 import com.fitquest.rpg.core.domain.model.*
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,12 +25,14 @@ data class OnboardingState(
     val workoutDaysPerWeek: Int = 4,
     val wakeTimeHour: Int = 7,
     val sleepTimeHour: Int = 23,
-    val isSaving: Boolean = false
+    val isSaving: Boolean = false,
+    val error: String? = null
 )
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OnboardingState())
@@ -53,27 +56,40 @@ class OnboardingViewModel @Inject constructor(
     fun updateSleepTime(v: Int) { _state.value = _state.value.copy(sleepTimeHour = v) }
 
     fun finishOnboarding(onComplete: () -> Unit) {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            _state.value = _state.value.copy(error = "Not logged in. Please restart the app.")
+            return
+        }
         viewModelScope.launch {
-            _state.value = _state.value.copy(isSaving = true)
-            val s = _state.value
-            userRepo.saveProfile(
-                UserProfile(
-                    name = s.name.ifBlank { "Hunter" },
-                    age = s.age,
-                    gender = s.gender,
-                    heightCm = s.heightCm,
-                    weightKg = s.weightKg,
-                    fitnessLevel = s.fitnessLevel,
-                    primaryGoal = s.primaryGoal,
-                    dietaryStyle = s.dietaryStyle,
-                    workoutDaysPerWeek = s.workoutDaysPerWeek,
-                    wakeTimeHour = s.wakeTimeHour,
-                    sleepTimeHour = s.sleepTimeHour,
-                    onboardingComplete = true
+            _state.value = _state.value.copy(isSaving = true, error = null)
+            try {
+                val s = _state.value
+                userRepo.saveProfile(
+                    uid = uid,
+                    profile = UserProfile(
+                        name = s.name.ifBlank { "Hunter" },
+                        age = s.age,
+                        gender = s.gender,
+                        heightCm = s.heightCm,
+                        weightKg = s.weightKg,
+                        fitnessLevel = s.fitnessLevel,
+                        primaryGoal = s.primaryGoal,
+                        dietaryStyle = s.dietaryStyle,
+                        workoutDaysPerWeek = s.workoutDaysPerWeek,
+                        wakeTimeHour = s.wakeTimeHour,
+                        sleepTimeHour = s.sleepTimeHour,
+                        onboardingComplete = true
+                    )
                 )
-            )
-            _state.value = _state.value.copy(isSaving = false)
-            onComplete()
+                _state.value = _state.value.copy(isSaving = false)
+                onComplete()
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isSaving = false,
+                    error = "Failed to save profile. Please try again."
+                )
+            }
         }
     }
 }
