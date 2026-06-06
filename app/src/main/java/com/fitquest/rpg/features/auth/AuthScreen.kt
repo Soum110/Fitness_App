@@ -64,7 +64,7 @@ fun AuthScreen(
                 Icon(
                     painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = Color.Unspecified,
                     modifier = Modifier.size(64.dp)
                 )
                 Spacer(Modifier.height(12.dp))

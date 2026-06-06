@@ -275,6 +275,8 @@ class FirestoreRepository @Inject constructor(
                 "isPredefined" to card.isPredefined,
                 "isRedeemed" to card.isRedeemed,
                 "redeemedAtMs" to card.redeemedAtMs,
+                "lastRedeemedAtMs" to card.lastRedeemedAtMs,
+                "timesRedeemed" to card.timesRedeemed,
                 "hasTask" to card.hasTask,
                 "taskType" to card.taskType,
                 "taskProgress" to card.taskProgress,
@@ -305,6 +307,8 @@ class FirestoreRepository @Inject constructor(
                         isPredefined = doc.getBoolean("isPredefined") ?: true,
                         isRedeemed = doc.getBoolean("isRedeemed") ?: false,
                         redeemedAtMs = doc.getLong("redeemedAtMs"),
+                        lastRedeemedAtMs = doc.getLong("lastRedeemedAtMs"),
+                        timesRedeemed = (doc.getLong("timesRedeemed") ?: 0).toInt(),
                         hasTask = doc.getBoolean("hasTask") ?: false,
                         taskType = doc.getString("taskType") ?: "NONE",
                         taskProgress = (doc.getLong("taskProgress") ?: 0).toInt(),
@@ -325,5 +329,27 @@ class FirestoreRepository @Inject constructor(
 
     suspend fun deleteCard(uid: String, card: RewardCard) {
         cardsCol(uid).document(card.id.toString()).delete().await()
+    }
+
+    suspend fun deleteUserData(uid: String) {
+        profileDoc(uid).delete().await()
+        economyDoc(uid).delete().await()
+
+        val attributes = attributesCol(uid).get().await()
+        for (doc in attributes.documents) {
+            doc.reference.delete().await()
+        }
+
+        val tasks = tasksCol(uid).get().await()
+        for (doc in tasks.documents) {
+            doc.reference.delete().await()
+        }
+
+        val cards = cardsCol(uid).get().await()
+        for (doc in cards.documents) {
+            doc.reference.delete().await()
+        }
+
+        userDoc(uid).delete().await()
     }
 }

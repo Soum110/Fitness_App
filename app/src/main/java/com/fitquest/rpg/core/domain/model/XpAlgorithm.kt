@@ -52,6 +52,38 @@ object XpAlgorithm {
     }
 
     /**
+     * XP required to advance FROM a given global level to the next.
+     */
+    fun globalXpRequiredForLevel(level: Int): Long {
+        if (level >= MAX_LEVEL) return Long.MAX_VALUE
+        return 5 * xpRequiredForLevel(level)
+    }
+
+    /**
+     * Total cumulative XP needed to reach a given global level from Level 1.
+     */
+    fun globalTotalXpToReachLevel(targetLevel: Int): Long {
+        return 5 * totalXpToReachLevel(targetLevel)
+    }
+
+    /**
+     * Given a total cumulative global XP, compute the global level and progress fraction.
+     */
+    fun globalLevelFromTotalXp(totalXp: Long): Pair<Int, Float> {
+        var level = 1
+        var remaining = totalXp
+        while (level < MAX_LEVEL) {
+            val needed = globalXpRequiredForLevel(level)
+            if (remaining < needed) break
+            remaining -= needed
+            level++
+        }
+        val neededForNext = globalXpRequiredForLevel(level)
+        val progress = if (level >= MAX_LEVEL) 0f else (remaining.toFloat() / neededForNext.toFloat()).coerceIn(0f, 1f)
+        return Pair(level, progress)
+    }
+
+    /**
      * XP awarded for completing a task, scaled by difficulty and attribute.
      */
     fun xpForTask(difficultyMultiplier: Float = 1.0f): Long {

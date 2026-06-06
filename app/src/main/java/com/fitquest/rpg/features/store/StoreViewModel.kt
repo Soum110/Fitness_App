@@ -48,6 +48,13 @@ class StoreViewModel @Inject constructor(
 
     fun redeemCard(card: RewardCard) {
         val currentUid = auth.currentUser?.uid ?: return
+        val isLocked = card.lastRedeemedAtMs?.let { lastTime ->
+            System.currentTimeMillis() - lastTime < 2 * 24 * 60 * 60 * 1000L
+        } ?: false
+        if (isLocked) {
+            _uiState.update { it.copy(errorMessage = "This reward is currently locked.") }
+            return
+        }
         viewModelScope.launch {
             try {
                 val success = userRepo.spendActionPoints(currentUid, card.apCost)

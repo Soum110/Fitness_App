@@ -1,0 +1,66 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Rising Sun Left Facet (Light Yellow Highlight) -->
+    <path
+        android:fillColor="#FFF59D"
+        android:pathData="M12,5 A6,6 0,0,0,6,11 L12,11 Z"/>
+
+    <!-- Rising Sun Right Facet (Deep Gold Shadow) -->
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M12,5 L12,11 L18,11 A6,6 0,0,0,12,5 Z"/>
+
+    <!-- Left Horizon Plate (Coral Highlight) -->
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M2,13 L12,13 L12,14.5 L2,14.5 Z"/>
+
+    <!-- Right Horizon Plate (Crimson Shadow) -->
+    <path
+        android:fillColor="#C62828"
+        android:pathData="M12,13 L22,13 L22,14.5 L12,14.5 Z"/>
+
+    <!-- Left Ray 1 (Top Left - Highlight) -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="M7,5 L8.5,3.5 L9.5,4.5 L8,6 Z"/>
+
+    <!-- Right Ray 1 (Top Right - Shadow) -->
+    <path
+        android:fillColor="#FF8F00"
+        android:pathData="M17,5 L16,6 L14.5,4.5 L15.5,3.5 Z"/>
+
+    <!-- Top Ray Left Half (Highlight) -->
+    <path
+        android:fillColor="#FFF9C4"
+        android:pathData="M11,1 H12 V4 H11 Z"/>
+
+    <!-- Top Ray Right Half (Shadow) -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M12,1 H13 V4 H12 Z"/>
+
+    <!-- Sea Reflection Left Half (Highlight) -->
+    <path
+        android:fillColor="#FFAB91"
+        android:pathData="M5,16 L12,16 L12,17.5 L6,17.5 Z"/>
+
+    <!-- Sea Reflection Right Half (Shadow) -->
+    <path
+        android:fillColor="#D84315"
+        android:pathData="M12,16 L19,16 L18,17.5 L12,17.5 Z"/>
+
+    <!-- Sea Reflection Bottom Left -->
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M8,19 L12,19 L12,20 L9,20 Z"/>
+
+    <!-- Sea Reflection Bottom Right -->
+    <path
+        android:fillColor="#E65100"
+        android:pathData="M12,19 L16,19 L15,20 L12,20 Z"/>
+</vector>

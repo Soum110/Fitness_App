@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Sunrise glow -->
+    <path
+        android:pathData="M12,4 L12,2 M12,22 L12,20 M4,12 L2,12 M22,12 L20,12 M6.34,6.34 L4.93,4.93 M19.07,19.07 L17.66,17.66 M6.34,17.66 L4.93,19.07 M19.07,6.34 L17.66,4.93"
+        android:strokeColor="#FFB300"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"/>
+
+    <!-- Rising Sun Core -->
+    <path
+        android:pathData="M12,7 A5,5 0,0 1,17 12 L7,12 A5,5 0,0 1,12 7 Z"
+        android:fillColor="#FFD54F"/>
+
+    <!-- Horizon Line -->
+    <path
+        android:pathData="M2,16 H22"
+        android:strokeColor="#FF9100"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+
+    <!-- Sea/reflection glow -->
+    <path
+        android:pathData="M6,19 H18 M9,21 H15"
+        android:strokeColor="#FF9100"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"/>
+</vector>

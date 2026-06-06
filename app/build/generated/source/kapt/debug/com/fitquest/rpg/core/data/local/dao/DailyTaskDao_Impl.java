@@ -8,6 +8,7 @@ import androidx.room.CoroutinesRoom;
 import androidx.room.EntityDeletionOrUpdateAdapter;
 import androidx.room.EntityInsertionAdapter;
 import androidx.room.RoomDatabase;
+import androidx.room.RoomDatabaseKt;
 import androidx.room.RoomSQLiteQuery;
 import androidx.room.SharedSQLiteStatement;
 import androidx.room.util.CursorUtil;
@@ -175,7 +176,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
 
   @Override
   public Object insertAll(final List<DailyTaskEntity> tasks,
-      final Continuation<? super Unit> arg1) {
+      final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -189,11 +190,11 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
-  public Object update(final DailyTaskEntity task, final Continuation<? super Unit> arg1) {
+  public Object update(final DailyTaskEntity task, final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -207,12 +208,18 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
+  }
+
+  @Override
+  public Object replaceTasksForDay(final long startOfDay, final long endOfDay,
+      final List<DailyTaskEntity> tasks, final Continuation<? super Unit> $completion) {
+    return RoomDatabaseKt.withTransaction(__db, (__cont) -> DailyTaskDao.DefaultImpls.replaceTasksForDay(DailyTaskDao_Impl.this, startOfDay, endOfDay, tasks, __cont), $completion);
   }
 
   @Override
   public Object deleteTasksForDay(final long startOfDay, final long endOfDay,
-      final Continuation<? super Unit> arg2) {
+      final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -235,7 +242,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           __preparedStmtOfDeleteTasksForDay.release(_stmt);
         }
       }
-    }, arg2);
+    }, $completion);
   }
 
   @Override
@@ -349,7 +356,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
   }
 
   @Override
-  public Object getTask(final long id, final Continuation<? super DailyTaskEntity> arg1) {
+  public Object getTask(final long id, final Continuation<? super DailyTaskEntity> $completion) {
     final String _sql = "SELECT * FROM daily_tasks WHERE id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -449,12 +456,12 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           _statement.release();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
   public Object countCompletedTasksForDay(final long startOfDay, final long endOfDay,
-      final Continuation<? super Integer> arg2) {
+      final Continuation<? super Integer> $completion) {
     final String _sql = "SELECT COUNT(*) FROM daily_tasks WHERE dateMs >= ? AND dateMs < ? AND isCompleted = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
     int _argIndex = 1;
@@ -486,12 +493,12 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           _statement.release();
         }
       }
-    }, arg2);
+    }, $completion);
   }
 
   @Override
   public Object countTotalTasksForDay(final long startOfDay, final long endOfDay,
-      final Continuation<? super Integer> arg2) {
+      final Continuation<? super Integer> $completion) {
     final String _sql = "SELECT COUNT(*) FROM daily_tasks WHERE dateMs >= ? AND dateMs < ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
     int _argIndex = 1;
@@ -523,7 +530,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           _statement.release();
         }
       }
-    }, arg2);
+    }, $completion);
   }
 
   @NonNull

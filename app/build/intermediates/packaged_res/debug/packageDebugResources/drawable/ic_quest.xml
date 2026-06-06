@@ -1,26 +1,85 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-  <!-- Blade -->
-  <path
-      android:fillColor="#FFFFFFFF"
-      android:pathData="M11,2h2v12h-2V2z"/>
-  <!-- Pointy tip -->
-  <path
-      android:fillColor="#FFFFFFFF"
-      android:pathData="M11,2l1,-1.5l1,1.5z"/>
-  <!-- Guard -->
-  <path
-      android:fillColor="#FFFFFFFF"
-      android:pathData="M7,14h10v1.5H7V14z"/>
-  <!-- Handle -->
-  <path
-      android:fillColor="#FFFFFFFF"
-      android:pathData="M11,15.5h2v4.5h-2v-4.5z"/>
-  <!-- Pommel -->
-  <path
-      android:fillColor="#FFFFFFFF"
-      android:pathData="M10.5,20h3v1.5h-3v-1.5z"/>
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Background glowing diamond/shield backdrop (Neon Aura) -->
+    <path
+        android:fillColor="#00E5FF"
+        android:alpha="0.08"
+        android:pathData="M24,2 L42,11 L42,27 C42,38 31,45 24,47 C17,45 6,38 6,27 L6,11 Z"/>
+    <path
+        android:fillColor="#7B61FF"
+        android:alpha="0.12"
+        android:pathData="M24,6 L38,13 L38,25 C38,34 29,41 24,43 C19,41 10,34 10,25 L10,13 Z"/>
+
+    <!-- Left side of the Blade (Shadow/Steel) -->
+    <path
+        android:fillColor="#455A64"
+        android:pathData="M24,4 L19,26 H24 Z"/>
+    <!-- Right side of the Blade (Brilliant White/Silver) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,4 V26 H29 Z"/>
+    <!-- Center Blade Line (High-contrast line) -->
+    <path
+        android:fillColor="#B0BEC5"
+        android:pathData="M24,4 H24.6 V26 H24 Z"/>
+
+    <!-- Stylized Winged Crossguard Left -->
+    <path
+        android:fillColor="#B78400"
+        android:pathData="M24,26 L12,22 L15,28 L24,29 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M24,26 L14,24 L15,28 L24,29 Z"/>
+
+    <!-- Stylized Winged Crossguard Right -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M24,26 L36,22 L33,28 L24,29 Z"/>
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="M24,26 L34,24 L33,28 L24,29 Z"/>
+
+    <!-- Crossguard Center Core (Gold Shield Overlay) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M24,23 L20,28 H28 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M24,28 L20,31 H28 Z"/>
+
+    <!-- Hilt Handle (Faceted Dark Steel / Black) -->
+    <path
+        android:fillColor="#212121"
+        android:pathData="M22.5,29 H25.5 V39 H22.5 Z"/>
+    <!-- Handle rib highlights (Gold) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M22.5,31 H25.5 V32 H22.5 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M22.5,34 H25.5 V35 H22.5 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M22.5,37 H25.5 V38 H22.5 Z"/>
+
+    <!-- Pommel (Faceted Gold Diamond at base) -->
+    <path
+        android:fillColor="#B78400"
+        android:pathData="M24,39 L21,42 L24,45 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M24,39 L27,42 L24,45 Z"/>
+
+    <!-- Center Glowing Heart / Mana Stone (Neon Cyan Gem) -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M24,24 L21,27 L24,30 L27,27 Z"/>
+    <!-- Gem shine (White dot) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,25.5 L23,27 L24,28.5 L25,27 Z"/>
 </vector>

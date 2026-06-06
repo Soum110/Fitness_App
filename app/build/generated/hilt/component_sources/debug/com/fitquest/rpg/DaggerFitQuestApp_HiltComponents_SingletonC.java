@@ -436,35 +436,23 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_fitquest_rpg_features_dashboard_DashboardViewModel = "com.fitquest.rpg.features.dashboard.DashboardViewModel";
-
-      static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
-
-      static String com_fitquest_rpg_features_store_StoreViewModel = "com.fitquest.rpg.features.store.StoreViewModel";
-
-      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
-
       static String com_fitquest_rpg_features_workout_WorkoutViewModel = "com.fitquest.rpg.features.workout.WorkoutViewModel";
 
       static String com_fitquest_rpg_features_attributes_AttributesViewModel = "com.fitquest.rpg.features.attributes.AttributesViewModel";
-
-      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
 
       static String com_fitquest_rpg_features_profile_ProfileViewModel = "com.fitquest.rpg.features.profile.ProfileViewModel";
 
       static String com_fitquest_rpg_features_auth_AuthViewModel = "com.fitquest.rpg.features.auth.AuthViewModel";
 
-      @KeepFieldType
-      DashboardViewModel com_fitquest_rpg_features_dashboard_DashboardViewModel2;
+      static String com_fitquest_rpg_features_dashboard_DashboardViewModel = "com.fitquest.rpg.features.dashboard.DashboardViewModel";
 
-      @KeepFieldType
-      RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
+      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
 
-      @KeepFieldType
-      StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
+      static String com_fitquest_rpg_features_store_StoreViewModel = "com.fitquest.rpg.features.store.StoreViewModel";
 
-      @KeepFieldType
-      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
+      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
+
+      static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
 
       @KeepFieldType
       WorkoutViewModel com_fitquest_rpg_features_workout_WorkoutViewModel2;
@@ -473,13 +461,25 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
       AttributesViewModel com_fitquest_rpg_features_attributes_AttributesViewModel2;
 
       @KeepFieldType
-      OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
-
-      @KeepFieldType
       ProfileViewModel com_fitquest_rpg_features_profile_ProfileViewModel2;
 
       @KeepFieldType
       AuthViewModel com_fitquest_rpg_features_auth_AuthViewModel2;
+
+      @KeepFieldType
+      DashboardViewModel com_fitquest_rpg_features_dashboard_DashboardViewModel2;
+
+      @KeepFieldType
+      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
+
+      @KeepFieldType
+      StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
+
+      @KeepFieldType
+      OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
+
+      @KeepFieldType
+      RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
     }
   }
 
@@ -546,30 +546,24 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
     private static final class LazyClassKeyProvider {
       static String com_fitquest_rpg_features_dashboard_DashboardViewModel = "com.fitquest.rpg.features.dashboard.DashboardViewModel";
 
-      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
-
-      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
-
       static String com_fitquest_rpg_features_profile_ProfileViewModel = "com.fitquest.rpg.features.profile.ProfileViewModel";
 
       static String com_fitquest_rpg_features_attributes_AttributesViewModel = "com.fitquest.rpg.features.attributes.AttributesViewModel";
 
       static String com_fitquest_rpg_features_auth_AuthViewModel = "com.fitquest.rpg.features.auth.AuthViewModel";
 
-      static String com_fitquest_rpg_features_workout_WorkoutViewModel = "com.fitquest.rpg.features.workout.WorkoutViewModel";
+      static String com_fitquest_rpg_features_store_StoreViewModel = "com.fitquest.rpg.features.store.StoreViewModel";
 
       static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
 
-      static String com_fitquest_rpg_features_store_StoreViewModel = "com.fitquest.rpg.features.store.StoreViewModel";
+      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
+
+      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
+
+      static String com_fitquest_rpg_features_workout_WorkoutViewModel = "com.fitquest.rpg.features.workout.WorkoutViewModel";
 
       @KeepFieldType
       DashboardViewModel com_fitquest_rpg_features_dashboard_DashboardViewModel2;
-
-      @KeepFieldType
-      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
-
-      @KeepFieldType
-      OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
 
       @KeepFieldType
       ProfileViewModel com_fitquest_rpg_features_profile_ProfileViewModel2;
@@ -581,13 +575,19 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
       AuthViewModel com_fitquest_rpg_features_auth_AuthViewModel2;
 
       @KeepFieldType
-      WorkoutViewModel com_fitquest_rpg_features_workout_WorkoutViewModel2;
+      StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
 
       @KeepFieldType
       RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
 
       @KeepFieldType
-      StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
+      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
+
+      @KeepFieldType
+      OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
+
+      @KeepFieldType
+      WorkoutViewModel com_fitquest_rpg_features_workout_WorkoutViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -627,7 +627,7 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
           return (T) new OnboardingViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
 
           case 5: // com.fitquest.rpg.features.profile.ProfileViewModel 
-          return (T) new ProfileViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new ProfileViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.firestoreRepositoryProvider.get(), singletonCImpl.provideDatabaseProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
 
           case 6: // com.fitquest.rpg.features.roadmap.RoadmapViewModel 
           return (T) new RoadmapViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());

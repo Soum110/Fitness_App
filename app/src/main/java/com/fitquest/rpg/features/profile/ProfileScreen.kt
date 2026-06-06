@@ -20,14 +20,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.UserRepository
+import com.fitquest.rpg.core.data.repository.TaskRepository
+import com.fitquest.rpg.core.data.repository.RewardCardRepository
+import com.fitquest.rpg.core.data.remote.FirestoreRepository
+import com.fitquest.rpg.core.data.local.FitQuestDatabase
 import com.fitquest.rpg.core.domain.model.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import androidx.compose.ui.res.painterResource
 import com.fitquest.rpg.ui.components.*
 import com.fitquest.rpg.ui.theme.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 // ─── ViewModel ──────────────────────────────────────────────────────────────
 
@@ -41,6 +53,10 @@ data class ProfileUiState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepo: UserRepository,
+    private val taskRepo: TaskRepository,
+    private val rewardCardRepo: RewardCardRepository,
+    private val firestoreRepo: FirestoreRepository,
+    private val db: FitQuestDatabase,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -60,6 +76,41 @@ class ProfileViewModel @Inject constructor(
              .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState())
         }
     }
+
+    fun deleteAccount(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        val user = auth.currentUser
+        val uid = user?.uid
+        if (uid == null) {
+            onFailure("No user is currently signed in.")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                // 1. Stop all active sync jobs
+                userRepo.stopSync()
+                taskRepo.stopSync()
+                rewardCardRepo.stopSync()
+
+                // 2. Delete remote data in Firestore (while auth token is still valid)
+                firestoreRepo.deleteUserData(uid)
+
+                // 3. Clear local cache
+                withContext(Dispatchers.IO) {
+                    db.clearAllTables()
+                }
+
+                // 4. Delete Firebase Authentication user
+                user.delete().await()
+
+                onSuccess()
+            } catch (e: FirebaseAuthRecentLoginRequiredException) {
+                onFailure("For security reasons, this operation requires recent authentication. Please log out, sign back in, and try again.")
+            } catch (e: Exception) {
+                onFailure(e.localizedMessage ?: "Failed to delete account.")
+            }
+        }
+    }
 }
 
 // ─── Screen ─────────────────────────────────────────────────────────────────
@@ -71,6 +122,8 @@ fun ProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Show loading if profile not yet loaded
     if (state.profile == null) {
@@ -82,14 +135,12 @@ fun ProfileScreen(
 
     val profile = state.profile!!
     val economy = state.economy
-    val overallRank = if (state.attributes.isEmpty()) Rank.BRONZE_RECRUIT
-    else Rank.fromLevel(state.attributes.map { it.level }.average().toInt())
+    val globalLevelPair = if (state.attributes.isEmpty()) Pair(1, 0f)
+    else XpAlgorithm.globalLevelFromTotalXp(state.attributes.sumOf { it.totalXpEarned })
 
-    val globalLevel = if (state.attributes.isEmpty()) 1
-    else state.attributes.map { it.level }.average().toInt()
-
-    val globalProgressFraction = if (state.attributes.isEmpty()) 0f
-    else state.attributes.map { it.progressFraction }.average().toFloat()
+    val globalLevel = globalLevelPair.first
+    val globalProgressFraction = globalLevelPair.second
+    val overallRank = Rank.fromLevel(globalLevel)
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -113,6 +164,48 @@ fun ProfileScreen(
             dismissButton = {
                 TextButton(
                     onClick = { showLogoutDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            containerColor = CardNavy,
+            shape = RoundedCornerShape(8.dp),
+            title = { Text("Delete Registry & Start Over?", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "This action is permanent and cannot be undone. All your levels, daily quests, action points, and store history will be permanently deleted from the database. You will be signed out and can sign up again with a new sheet.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteAccount(
+                            onSuccess = {
+                                onLogout()
+                            },
+                            onFailure = { error ->
+                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    },
+                    shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935), contentColor = Color.White)
+                ) {
+                    Text("Delete Permanently")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                 ) {
                     Text("Cancel")
@@ -429,6 +522,20 @@ fun ProfileScreen(
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color(0xFFD32F2F), modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text("Sign Out", color = Color(0xFFD32F2F))
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Delete Account button
+        OutlinedButton(
+            onClick = { showDeleteDialog = true },
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+            border = BorderStroke(1.dp, Color(0xFFE53935).copy(alpha = 0.4f)),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Delete Registry & Start Over", color = Color(0xFFE53935))
         }
 
         Spacer(Modifier.height(80.dp))

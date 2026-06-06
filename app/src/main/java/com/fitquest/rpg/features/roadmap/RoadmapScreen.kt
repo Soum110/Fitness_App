@@ -51,10 +51,11 @@ class RoadmapViewModel @Inject constructor(
             MutableStateFlow(RoadmapUiState())
         } else {
             userRepo.observeAttributes(uid).map { attrs ->
-                val avgLevel = if (attrs.isEmpty()) 1 else attrs.map { it.level }.average().toInt()
+                val globalLevel = if (attrs.isEmpty()) 1
+                else XpAlgorithm.globalLevelFromTotalXp(attrs.sumOf { it.totalXpEarned }).first
                 RoadmapUiState(
-                    overallRank = Rank.fromLevel(avgLevel),
-                    globalLevel = avgLevel,
+                    overallRank = Rank.fromLevel(globalLevel),
+                    globalLevel = globalLevel,
                     loaded = true
                 )
             }.catch { emit(RoadmapUiState()) }
@@ -122,7 +123,7 @@ fun RoadmapScreen(
     // Smoothly scroll to center the player's level when loaded
     LaunchedEffect(state.loaded) {
         if (state.loaded) {
-            val targetScrollDp = (levelY - 240.dp).coerceAtLeast(0.dp)
+            val targetScrollDp = (levelY + 24.dp - 240.dp).coerceAtLeast(0.dp)
             val targetScrollPx = with(density) { targetScrollDp.toPx() }
             scrollState.animateScrollTo(targetScrollPx.toInt(), tween(1200, easing = FastOutSlowInEasing))
         }
@@ -175,205 +176,217 @@ fun RoadmapScreen(
                     .fillMaxSize()
                     .verticalScroll(scrollState)
             ) {
-                // Background overlay for completed area tint and current position line
-                Canvas(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(totalHeight)
+                        .padding(vertical = 24.dp)
                 ) {
-                    val currentY = levelY.toPx()
-                    
-                    // Completed lower side smooth vertical gradient background
-                    val completedBrush = Brush.verticalGradient(
-                        colors = gradientColors,
-                        startY = 0f,
-                        endY = size.height
-                    )
-                    
-                    drawRect(
-                        brush = completedBrush,
-                        topLeft = Offset(0f, currentY),
-                        size = androidx.compose.ui.geometry.Size(size.width, size.height - currentY)
-                    )
-                    
-                    // Current stage horizontal indicator line
-                    drawLine(
-                        color = animatedRankColor,
-                        start = Offset(0f, currentY),
-                        end = Offset(size.width, currentY),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-                
-                // Content Row containing Ruler (Left) and Tier Cards (Right)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(totalHeight)
-                ) {
-                    // LEFT COLUMN: Ruler
                     Box(
                         modifier = Modifier
-                            .width(80.dp)
-                            .fillMaxHeight()
+                            .fillMaxWidth()
+                            .height(totalHeight)
                     ) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val rulerX = 60.dp.toPx()
+                        // Background overlay for completed area tint and current position line
+                        Canvas(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(totalHeight)
+                        ) {
                             val currentY = levelY.toPx()
                             
-                            // Uncompleted track (thin grey line)
-                            drawLine(
-                                color = Color(0xFF222222),
-                                start = Offset(rulerX, 0f),
-                                end = Offset(rulerX, currentY),
-                                strokeWidth = 2.dp.toPx()
+                            // Completed lower side smooth vertical gradient background
+                            val completedBrush = Brush.verticalGradient(
+                                colors = gradientColors,
+                                startY = 0f,
+                                endY = size.height
                             )
                             
-                            // Completed track (glowing rank color line)
+                            drawRect(
+                                brush = completedBrush,
+                                topLeft = Offset(0f, currentY),
+                                size = androidx.compose.ui.geometry.Size(size.width, size.height - currentY)
+                            )
+                            
+                            // Current stage horizontal indicator line
                             drawLine(
                                 color = animatedRankColor,
-                                start = Offset(rulerX, currentY),
-                                end = Offset(rulerX, size.height),
-                                strokeWidth = 4.dp.toPx(),
-                                cap = StrokeCap.Round
+                                start = Offset(0f, currentY),
+                                end = Offset(size.width, currentY),
+                                strokeWidth = 2.dp.toPx()
                             )
-                            
-                            // Tick lines at boundaries
-                            for (i in 0..10) {
-                                val tickY = i * 140.dp.toPx()
-                                drawLine(
-                                    color = if (tickY >= currentY) animatedRankColor else Color(0xFF333333),
-                                    start = Offset(rulerX - 8.dp.toPx(), tickY),
-                                    end = Offset(rulerX, tickY),
-                                    strokeWidth = 1.5.dp.toPx()
-                                )
-                            }
                         }
                         
-                        // Text labels overlayed at tick levels
-                        for (i in 0..10) {
-                            val levelNum = 100 - i * 10
-                            val displayNum = if (levelNum == 0) 1 else levelNum
-                            val labelColor = if ((i * 140).dp >= levelY) animatedRankColor else Color(0xFF666666)
-                            
-                            Text(
-                                text = "LV $displayNum",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = labelColor,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .offset(x = 12.dp, y = (i * 140).dp - 6.dp)
-                            )
-                        }
-                    }
-                    
-                    // RIGHT COLUMN: Tier Cards
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                    ) {
-                        ranks.forEach { rank ->
-                            val isCurrent = (rank == state.overallRank)
-                            val tierColor = Color(rank.colorHex)
-                            
+                        // Content Row containing Ruler (Left) and Tier Cards (Right)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(totalHeight)
+                        ) {
+                            // LEFT COLUMN: Ruler
                             Box(
                                 modifier = Modifier
-                                    .height(slotHeight)
-                                    .fillMaxWidth()
-                                    .padding(end = 16.dp, top = 8.dp, bottom = 8.dp),
-                                contentAlignment = Alignment.CenterStart
+                                    .width(80.dp)
+                                    .fillMaxHeight()
                             ) {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(containerColor = CardNavy),
-                                    border = BorderStroke(
-                                        width = if (isCurrent) 1.5.dp else 1.dp,
-                                        color = if (isCurrent) tierColor else BorderNavy
-                                    ),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = rank.iconResId()),
-                                            contentDescription = null,
-                                            tint = Color.Unspecified,
-                                            modifier = Modifier.size(52.dp)
+                                Canvas(modifier = Modifier.fillMaxSize()) {
+                                    val rulerX = 60.dp.toPx()
+                                    val currentY = levelY.toPx()
+                                    
+                                    // Uncompleted track (thin grey line)
+                                    drawLine(
+                                        color = Color(0xFF222222),
+                                        start = Offset(rulerX, 0f),
+                                        end = Offset(rulerX, currentY),
+                                        strokeWidth = 2.dp.toPx()
+                                    )
+                                    
+                                    // Completed track (glowing rank color line)
+                                    drawLine(
+                                        color = animatedRankColor,
+                                        start = Offset(rulerX, currentY),
+                                        end = Offset(rulerX, size.height),
+                                        strokeWidth = 4.dp.toPx(),
+                                        cap = StrokeCap.Round
+                                    )
+                                    
+                                    // Tick lines at boundaries
+                                    for (i in 0..10) {
+                                        val tickY = i * 140.dp.toPx()
+                                        drawLine(
+                                            color = if (tickY >= currentY) animatedRankColor else Color(0xFF333333),
+                                            start = Offset(rulerX - 8.dp.toPx(), tickY),
+                                            end = Offset(rulerX, tickY),
+                                            strokeWidth = 1.5.dp.toPx()
                                         )
-                                        
-                                        Column(modifier = Modifier.weight(1f)) {
+                                    }
+                                }
+                                
+                                // Text labels overlayed at tick levels
+                                for (i in 0..10) {
+                                    val levelNum = 100 - i * 10
+                                    val displayNum = if (levelNum == 0) 1 else levelNum
+                                    val labelColor = if ((i * 140).dp >= levelY) animatedRankColor else Color(0xFF666666)
+                                    
+                                    Text(
+                                        text = "LV $displayNum",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = labelColor,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .offset(x = 12.dp, y = (i * 140).dp - 6.dp)
+                                    )
+                                }
+                            }
+                            
+                            // RIGHT COLUMN: Tier Cards
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            ) {
+                                ranks.forEach { rank ->
+                                    val isCurrent = (rank == state.overallRank)
+                                    val tierColor = Color(rank.colorHex)
+                                    
+                                    Box(
+                                        modifier = Modifier
+                                            .height(slotHeight)
+                                            .fillMaxWidth()
+                                            .padding(end = 16.dp, top = 8.dp, bottom = 8.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = CardDefaults.cardColors(containerColor = CardNavy),
+                                            border = BorderStroke(
+                                                width = if (isCurrent) 1.5.dp else 1.dp,
+                                                color = if (isCurrent) tierColor else BorderNavy
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
                                             Row(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(horizontal = 14.dp, vertical = 12.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                horizontalArrangement = Arrangement.spacedBy(14.dp)
                                             ) {
-                                                Text(
-                                                    text = rank.title.uppercase(),
-                                                    style = MaterialTheme.typography.labelLarge,
-                                                    color = tierColor,
-                                                    fontWeight = FontWeight.Black,
-                                                    letterSpacing = 0.5.sp
+                                                Icon(
+                                                    painter = painterResource(id = rank.iconResId()),
+                                                    contentDescription = null,
+                                                    tint = Color.Unspecified,
+                                                    modifier = Modifier.size(52.dp)
                                                 )
-                                                if (isCurrent) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .background(tierColor.copy(alpha = 0.08f), RoundedCornerShape(3.dp))
-                                                            .border(0.5.dp, tierColor.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
-                                                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                                                
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                                                     ) {
                                                         Text(
-                                                            text = "CURRENT",
-                                                            style = MaterialTheme.typography.labelSmall,
+                                                            text = rank.title.uppercase(),
+                                                            style = MaterialTheme.typography.labelLarge,
                                                             color = tierColor,
                                                             fontWeight = FontWeight.Black,
-                                                            fontSize = 8.sp,
                                                             letterSpacing = 0.5.sp
                                                         )
+                                                        if (isCurrent) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .background(tierColor.copy(alpha = 0.08f), RoundedCornerShape(3.dp))
+                                                                    .border(0.5.dp, tierColor.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
+                                                                    .padding(horizontal = 6.dp, vertical = 1.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = "CURRENT",
+                                                                    style = MaterialTheme.typography.labelSmall,
+                                                                    color = tierColor,
+                                                                    fontWeight = FontWeight.Black,
+                                                                    fontSize = 8.sp,
+                                                                    letterSpacing = 0.5.sp
+                                                                )
+                                                            }
+                                                        }
                                                     }
+                                                    Text(
+                                                        text = "LEVELS ${rank.minLevel} - ${if (rank.minLevel == 90) "100" else (rank.minLevel + 9)}",
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        color = Color(0xFF888888),
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                    Spacer(Modifier.height(4.dp))
+                                                    Text(
+                                                        text = getRankDesc(rank),
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = Color(0xFF666666),
+                                                        lineHeight = 13.sp
+                                                    )
                                                 }
                                             }
-                                            Text(
-                                                text = "LEVELS ${rank.minLevel} - ${if (rank.minLevel == 90) "100" else (rank.minLevel + 9)}",
-                                                style = MaterialTheme.typography.labelMedium,
-                                                color = Color(0xFF888888),
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Spacer(Modifier.height(4.dp))
-                                            Text(
-                                                text = getRankDesc(rank),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = Color(0xFF666666),
-                                                lineHeight = 13.sp
-                                            )
                                         }
                                     }
                                 }
                             }
                         }
+                        
+                        // HUD current position floating indicator badge
+                        Box(
+                            modifier = Modifier
+                                .offset(x = 92.dp, y = levelY - 10.dp)
+                                .background(animatedRankColor, RoundedCornerShape(4.dp))
+                                .border(0.5.dp, Color.White, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "YOU (LV ${state.globalLevel})",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Black,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
                     }
-                }
-                
-                // HUD current position floating indicator badge
-                Box(
-                    modifier = Modifier
-                        .offset(x = 92.dp, y = levelY - 10.dp)
-                        .background(animatedRankColor, RoundedCornerShape(4.dp))
-                        .border(0.5.dp, Color.White, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "YOU (LV ${state.globalLevel})",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 9.sp,
-                        letterSpacing = 0.5.sp
-                    )
                 }
             }
         }

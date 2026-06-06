@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Moon Crescent Shadow Curve (Dark Yellow) -->
+    <path
+        android:fillColor="#FBC02D"
+        android:pathData="M12,3 A9,9 0,0,0,4.5,12 A9,9 0,0,0,12,21 A7.5,7.5 0,0,1,8,12 A7.5,7.5 0,0,1,12,3 Z"/>
+
+    <!-- Moon Crescent Highlight Curve (Light Yellow) -->
+    <path
+        android:fillColor="#FFF59D"
+        android:pathData="M12,3 A7.5,7.5 0,0,0,8,12 A7.5,7.5 0,0,0,12,21 A7,7 0,0,1,12,3 Z"/>
+
+    <!-- Bright Inner Moon Rim -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,3 A7,7 0,0,0,9.5,12 A7,7 0,0,0,12,21 A6.5,6.5 0,0,1,12,3 Z"/>
+
+    <!-- Star 1 (Big Faceted Star) -->
+    <path
+        android:fillColor="#FFF59D"
+        android:pathData="M19,3 L19.5,4.5 L21,5 L19.5,5.5 L19,7 L18.5,5.5 L17,5 L18.5,4.5 Z"/>
+
+    <!-- Star 1 Shadow Facet -->
+    <path
+        android:fillColor="#FBC02D"
+        android:pathData="M19,3 V7 L18.5,5.5 L17,5 L18.5,4.5 Z"/>
+
+    <!-- Star 2 (Small Faceted Star) -->
+    <path
+        android:fillColor="#FFF9C4"
+        android:pathData="M14,1.5 L14.25,2.25 L15,2.5 L14.25,2.75 L14,3.5 L13.75,2.75 L13,2.5 L13.75,2.25 Z"/>
+</vector>

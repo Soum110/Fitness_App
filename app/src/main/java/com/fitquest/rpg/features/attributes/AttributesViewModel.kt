@@ -28,13 +28,16 @@ class AttributesViewModel @Inject constructor(
             MutableStateFlow(AttributesUiState())
         } else {
             userRepo.observeAttributes(uid).map { attrs ->
-                val avgLevel = if (attrs.isEmpty()) 1 else attrs.map { it.level }.average().toInt()
-                val avgProgress = if (attrs.isEmpty()) 0f else attrs.map { it.progressFraction }.average().toFloat()
+                val (globalLevel, globalProgressFraction) = if (attrs.isEmpty()) {
+                    Pair(1, 0f)
+                } else {
+                    XpAlgorithm.globalLevelFromTotalXp(attrs.sumOf { it.totalXpEarned })
+                }
                 AttributesUiState(
                     attributes = attrs.sortedBy { it.type.ordinal },
-                    overallRank = Rank.fromLevel(avgLevel),
-                    globalLevel = avgLevel,
-                    globalProgressFraction = avgProgress
+                    overallRank = Rank.fromLevel(globalLevel),
+                    globalLevel = globalLevel,
+                    globalProgressFraction = globalProgressFraction
                 )
             }.catch { emit(AttributesUiState()) }
              .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AttributesUiState())

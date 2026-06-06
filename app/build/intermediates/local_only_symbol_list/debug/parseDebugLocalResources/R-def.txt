@@ -10,6 +10,7 @@ drawable ic_gift
 drawable ic_intelligence
 drawable ic_launcher_foreground
 drawable ic_meditation
+drawable ic_moon
 drawable ic_profile
 drawable ic_quest
 drawable ic_rank
@@ -17,6 +18,9 @@ drawable ic_reading
 drawable ic_stamina
 drawable ic_streak
 drawable ic_strength
+drawable ic_sun
+drawable ic_sunrise
+drawable ic_sunset
 drawable ic_tier_arise
 drawable ic_tier_bronze
 drawable ic_tier_crystal
@@ -29,6 +33,7 @@ drawable ic_tier_platinum
 drawable ic_tier_steel
 drawable ic_timer
 drawable ic_tips
+drawable ic_water
 mipmap ic_launcher
 mipmap ic_launcher_round
 string app_name

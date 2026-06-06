@@ -46,7 +46,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `reward_cards` (`id`,`title`,`description`,`apCost`,`emoji`,`isPredefined`,`isRedeemed`,`redeemedAtMs`,`hasTask`,`taskType`,`taskProgress`,`taskTarget`,`taskCompleted`,`targetAttribute`,`bonusXp`,`bonusAp`,`overachieveXpPerCount`,`overachieveApPerCount`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `reward_cards` (`id`,`title`,`description`,`apCost`,`emoji`,`isPredefined`,`isRedeemed`,`redeemedAtMs`,`lastRedeemedAtMs`,`timesRedeemed`,`hasTask`,`taskType`,`taskProgress`,`taskTarget`,`taskCompleted`,`targetAttribute`,`bonusXp`,`bonusAp`,`overachieveXpPerCount`,`overachieveApPerCount`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -78,26 +78,32 @@ public final class RewardCardDao_Impl implements RewardCardDao {
         } else {
           statement.bindLong(8, entity.getRedeemedAtMs());
         }
+        if (entity.getLastRedeemedAtMs() == null) {
+          statement.bindNull(9);
+        } else {
+          statement.bindLong(9, entity.getLastRedeemedAtMs());
+        }
+        statement.bindLong(10, entity.getTimesRedeemed());
         final int _tmp_2 = entity.getHasTask() ? 1 : 0;
-        statement.bindLong(9, _tmp_2);
+        statement.bindLong(11, _tmp_2);
         if (entity.getTaskType() == null) {
-          statement.bindNull(10);
+          statement.bindNull(12);
         } else {
-          statement.bindString(10, entity.getTaskType());
+          statement.bindString(12, entity.getTaskType());
         }
-        statement.bindLong(11, entity.getTaskProgress());
-        statement.bindLong(12, entity.getTaskTarget());
+        statement.bindLong(13, entity.getTaskProgress());
+        statement.bindLong(14, entity.getTaskTarget());
         final int _tmp_3 = entity.getTaskCompleted() ? 1 : 0;
-        statement.bindLong(13, _tmp_3);
+        statement.bindLong(15, _tmp_3);
         if (entity.getTargetAttribute() == null) {
-          statement.bindNull(14);
+          statement.bindNull(16);
         } else {
-          statement.bindString(14, entity.getTargetAttribute());
+          statement.bindString(16, entity.getTargetAttribute());
         }
-        statement.bindLong(15, entity.getBonusXp());
-        statement.bindLong(16, entity.getBonusAp());
-        statement.bindLong(17, entity.getOverachieveXpPerCount());
-        statement.bindLong(18, entity.getOverachieveApPerCount());
+        statement.bindLong(17, entity.getBonusXp());
+        statement.bindLong(18, entity.getBonusAp());
+        statement.bindLong(19, entity.getOverachieveXpPerCount());
+        statement.bindLong(20, entity.getOverachieveApPerCount());
       }
     };
     this.__deletionAdapterOfRewardCardEntity = new EntityDeletionOrUpdateAdapter<RewardCardEntity>(__db) {
@@ -117,7 +123,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `reward_cards` SET `id` = ?,`title` = ?,`description` = ?,`apCost` = ?,`emoji` = ?,`isPredefined` = ?,`isRedeemed` = ?,`redeemedAtMs` = ?,`hasTask` = ?,`taskType` = ?,`taskProgress` = ?,`taskTarget` = ?,`taskCompleted` = ?,`targetAttribute` = ?,`bonusXp` = ?,`bonusAp` = ?,`overachieveXpPerCount` = ?,`overachieveApPerCount` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `reward_cards` SET `id` = ?,`title` = ?,`description` = ?,`apCost` = ?,`emoji` = ?,`isPredefined` = ?,`isRedeemed` = ?,`redeemedAtMs` = ?,`lastRedeemedAtMs` = ?,`timesRedeemed` = ?,`hasTask` = ?,`taskType` = ?,`taskProgress` = ?,`taskTarget` = ?,`taskCompleted` = ?,`targetAttribute` = ?,`bonusXp` = ?,`bonusAp` = ?,`overachieveXpPerCount` = ?,`overachieveApPerCount` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -149,27 +155,33 @@ public final class RewardCardDao_Impl implements RewardCardDao {
         } else {
           statement.bindLong(8, entity.getRedeemedAtMs());
         }
+        if (entity.getLastRedeemedAtMs() == null) {
+          statement.bindNull(9);
+        } else {
+          statement.bindLong(9, entity.getLastRedeemedAtMs());
+        }
+        statement.bindLong(10, entity.getTimesRedeemed());
         final int _tmp_2 = entity.getHasTask() ? 1 : 0;
-        statement.bindLong(9, _tmp_2);
+        statement.bindLong(11, _tmp_2);
         if (entity.getTaskType() == null) {
-          statement.bindNull(10);
+          statement.bindNull(12);
         } else {
-          statement.bindString(10, entity.getTaskType());
+          statement.bindString(12, entity.getTaskType());
         }
-        statement.bindLong(11, entity.getTaskProgress());
-        statement.bindLong(12, entity.getTaskTarget());
+        statement.bindLong(13, entity.getTaskProgress());
+        statement.bindLong(14, entity.getTaskTarget());
         final int _tmp_3 = entity.getTaskCompleted() ? 1 : 0;
-        statement.bindLong(13, _tmp_3);
+        statement.bindLong(15, _tmp_3);
         if (entity.getTargetAttribute() == null) {
-          statement.bindNull(14);
+          statement.bindNull(16);
         } else {
-          statement.bindString(14, entity.getTargetAttribute());
+          statement.bindString(16, entity.getTargetAttribute());
         }
-        statement.bindLong(15, entity.getBonusXp());
-        statement.bindLong(16, entity.getBonusAp());
-        statement.bindLong(17, entity.getOverachieveXpPerCount());
-        statement.bindLong(18, entity.getOverachieveApPerCount());
-        statement.bindLong(19, entity.getId());
+        statement.bindLong(17, entity.getBonusXp());
+        statement.bindLong(18, entity.getBonusAp());
+        statement.bindLong(19, entity.getOverachieveXpPerCount());
+        statement.bindLong(20, entity.getOverachieveApPerCount());
+        statement.bindLong(21, entity.getId());
       }
     };
   }
@@ -265,6 +277,8 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           final int _cursorIndexOfIsPredefined = CursorUtil.getColumnIndexOrThrow(_cursor, "isPredefined");
           final int _cursorIndexOfIsRedeemed = CursorUtil.getColumnIndexOrThrow(_cursor, "isRedeemed");
           final int _cursorIndexOfRedeemedAtMs = CursorUtil.getColumnIndexOrThrow(_cursor, "redeemedAtMs");
+          final int _cursorIndexOfLastRedeemedAtMs = CursorUtil.getColumnIndexOrThrow(_cursor, "lastRedeemedAtMs");
+          final int _cursorIndexOfTimesRedeemed = CursorUtil.getColumnIndexOrThrow(_cursor, "timesRedeemed");
           final int _cursorIndexOfHasTask = CursorUtil.getColumnIndexOrThrow(_cursor, "hasTask");
           final int _cursorIndexOfTaskType = CursorUtil.getColumnIndexOrThrow(_cursor, "taskType");
           final int _cursorIndexOfTaskProgress = CursorUtil.getColumnIndexOrThrow(_cursor, "taskProgress");
@@ -314,6 +328,14 @@ public final class RewardCardDao_Impl implements RewardCardDao {
             } else {
               _tmpRedeemedAtMs = _cursor.getLong(_cursorIndexOfRedeemedAtMs);
             }
+            final Long _tmpLastRedeemedAtMs;
+            if (_cursor.isNull(_cursorIndexOfLastRedeemedAtMs)) {
+              _tmpLastRedeemedAtMs = null;
+            } else {
+              _tmpLastRedeemedAtMs = _cursor.getLong(_cursorIndexOfLastRedeemedAtMs);
+            }
+            final int _tmpTimesRedeemed;
+            _tmpTimesRedeemed = _cursor.getInt(_cursorIndexOfTimesRedeemed);
             final boolean _tmpHasTask;
             final int _tmp_2;
             _tmp_2 = _cursor.getInt(_cursorIndexOfHasTask);
@@ -346,7 +368,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
             _tmpOverachieveXpPerCount = _cursor.getLong(_cursorIndexOfOverachieveXpPerCount);
             final int _tmpOverachieveApPerCount;
             _tmpOverachieveApPerCount = _cursor.getInt(_cursorIndexOfOverachieveApPerCount);
-            _item = new RewardCardEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpApCost,_tmpEmoji,_tmpIsPredefined,_tmpIsRedeemed,_tmpRedeemedAtMs,_tmpHasTask,_tmpTaskType,_tmpTaskProgress,_tmpTaskTarget,_tmpTaskCompleted,_tmpTargetAttribute,_tmpBonusXp,_tmpBonusAp,_tmpOverachieveXpPerCount,_tmpOverachieveApPerCount);
+            _item = new RewardCardEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpApCost,_tmpEmoji,_tmpIsPredefined,_tmpIsRedeemed,_tmpRedeemedAtMs,_tmpLastRedeemedAtMs,_tmpTimesRedeemed,_tmpHasTask,_tmpTaskType,_tmpTaskProgress,_tmpTaskTarget,_tmpTaskCompleted,_tmpTargetAttribute,_tmpBonusXp,_tmpBonusAp,_tmpOverachieveXpPerCount,_tmpOverachieveApPerCount);
             _result.add(_item);
           }
           return _result;
@@ -380,6 +402,8 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           final int _cursorIndexOfIsPredefined = CursorUtil.getColumnIndexOrThrow(_cursor, "isPredefined");
           final int _cursorIndexOfIsRedeemed = CursorUtil.getColumnIndexOrThrow(_cursor, "isRedeemed");
           final int _cursorIndexOfRedeemedAtMs = CursorUtil.getColumnIndexOrThrow(_cursor, "redeemedAtMs");
+          final int _cursorIndexOfLastRedeemedAtMs = CursorUtil.getColumnIndexOrThrow(_cursor, "lastRedeemedAtMs");
+          final int _cursorIndexOfTimesRedeemed = CursorUtil.getColumnIndexOrThrow(_cursor, "timesRedeemed");
           final int _cursorIndexOfHasTask = CursorUtil.getColumnIndexOrThrow(_cursor, "hasTask");
           final int _cursorIndexOfTaskType = CursorUtil.getColumnIndexOrThrow(_cursor, "taskType");
           final int _cursorIndexOfTaskProgress = CursorUtil.getColumnIndexOrThrow(_cursor, "taskProgress");
@@ -429,6 +453,14 @@ public final class RewardCardDao_Impl implements RewardCardDao {
             } else {
               _tmpRedeemedAtMs = _cursor.getLong(_cursorIndexOfRedeemedAtMs);
             }
+            final Long _tmpLastRedeemedAtMs;
+            if (_cursor.isNull(_cursorIndexOfLastRedeemedAtMs)) {
+              _tmpLastRedeemedAtMs = null;
+            } else {
+              _tmpLastRedeemedAtMs = _cursor.getLong(_cursorIndexOfLastRedeemedAtMs);
+            }
+            final int _tmpTimesRedeemed;
+            _tmpTimesRedeemed = _cursor.getInt(_cursorIndexOfTimesRedeemed);
             final boolean _tmpHasTask;
             final int _tmp_2;
             _tmp_2 = _cursor.getInt(_cursorIndexOfHasTask);
@@ -461,7 +493,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
             _tmpOverachieveXpPerCount = _cursor.getLong(_cursorIndexOfOverachieveXpPerCount);
             final int _tmpOverachieveApPerCount;
             _tmpOverachieveApPerCount = _cursor.getInt(_cursorIndexOfOverachieveApPerCount);
-            _item = new RewardCardEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpApCost,_tmpEmoji,_tmpIsPredefined,_tmpIsRedeemed,_tmpRedeemedAtMs,_tmpHasTask,_tmpTaskType,_tmpTaskProgress,_tmpTaskTarget,_tmpTaskCompleted,_tmpTargetAttribute,_tmpBonusXp,_tmpBonusAp,_tmpOverachieveXpPerCount,_tmpOverachieveApPerCount);
+            _item = new RewardCardEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpApCost,_tmpEmoji,_tmpIsPredefined,_tmpIsRedeemed,_tmpRedeemedAtMs,_tmpLastRedeemedAtMs,_tmpTimesRedeemed,_tmpHasTask,_tmpTaskType,_tmpTaskProgress,_tmpTaskTarget,_tmpTaskCompleted,_tmpTargetAttribute,_tmpBonusXp,_tmpBonusAp,_tmpOverachieveXpPerCount,_tmpOverachieveApPerCount);
             _result.add(_item);
           }
           return _result;

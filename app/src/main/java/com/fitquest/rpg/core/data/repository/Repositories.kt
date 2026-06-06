@@ -125,6 +125,12 @@ class UserRepository @Inject constructor(
         }
     }
 
+    fun stopSync() {
+        syncJob?.cancel()
+        syncJob = null
+        lastSyncedUid = null
+    }
+
     // ── Attributes ─────────────────────────────────────────────────────────
 
     fun observeAttributes(uid: String): Flow<List<Attribute>> {
@@ -252,8 +258,7 @@ class TaskRepository @Inject constructor(
                     try {
                         firestoreRepo.observeTodaysTasks(uid).collectLatest { remoteTasks ->
                             val (todayStart, todayEnd) = getTodayRange()
-                            taskDao.deleteTasksForDay(todayStart, todayEnd)
-                            taskDao.insertAll(remoteTasks.map { it.toEntity() })
+                            taskDao.replaceTasksForDay(todayStart, todayEnd, remoteTasks.map { it.toEntity() })
                         }
                     } catch (e: Exception) {
                         // ignore/handle background sync errors silently
@@ -447,6 +452,12 @@ class TaskRepository @Inject constructor(
         }
         return base + phase
     }
+
+    fun stopSync() {
+        tasksSyncJob?.cancel()
+        tasksSyncJob = null
+        lastSyncedUid = null
+    }
 }
 
 data class ExerciseData(val name: String, val description: String)
@@ -531,10 +542,26 @@ class RewardCardRepository @Inject constructor(
     }
 
     suspend fun redeemCard(uid: String, card: RewardCard) {
-        val updated = card.copy(isRedeemed = true, redeemedAtMs = System.currentTimeMillis())
-        cardDao.update(updated.toEntity())
+        val newTimesRedeemed = card.timesRedeemed + 1
+        val now = System.currentTimeMillis()
+        val updatedTemplate = card.copy(
+            lastRedeemedAtMs = now,
+            timesRedeemed = newTimesRedeemed
+        )
+        val redeemedInstance = card.copy(
+            id = now, // unique ID for the redeemed copy
+            isRedeemed = true,
+            redeemedAtMs = now,
+            timesRedeemed = newTimesRedeemed
+        )
+
+        cardDao.update(updatedTemplate.toEntity())
+        cardDao.insert(redeemedInstance.toEntity())
+
         syncScope.launch {
-            try { firestoreRepo.saveRewardCards(uid, listOf(updated)) } catch (e: Exception) {}
+            try {
+                firestoreRepo.saveRewardCards(uid, listOf(updatedTemplate, redeemedInstance))
+            } catch (e: Exception) {}
         }
     }
 
@@ -595,5 +622,11 @@ class RewardCardRepository @Inject constructor(
 
         userRepo.addXpToAttribute(uid, card.targetAttribute, card.bonusXp)
         userRepo.addActionPoints(uid, card.bonusAp)
+    }
+
+    fun stopSync() {
+        cardsSyncJob?.cancel()
+        cardsSyncJob = null
+        lastSyncedUid = null
     }
 }

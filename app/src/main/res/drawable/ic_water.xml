@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Left Droplet Facet (Cyan/Blue Highlight) -->
+    <path
+        android:fillColor="#29B6F6"
+        android:pathData="M12,2 C12,2 5,9.5 5,14 A7,7 0,0,0,12,21 L12,2 Z"/>
+
+    <!-- Right Droplet Facet (Deep Blue Shadow) -->
+    <path
+        android:fillColor="#0288D1"
+        android:pathData="M12,2 L12,21 A7,7 0,0,0,19,14 C19,9.5 12,2 12,2 Z"/>
+
+    <!-- Highlight Curve (Glossy Rim) -->
+    <path
+        android:fillColor="#E0F7FA"
+        android:pathData="M8,13 A4,4 0,0,1,12,9 L12,8 A5,5 0,0,0,7,13 Z"/>
+</vector>

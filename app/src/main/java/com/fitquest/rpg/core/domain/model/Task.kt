@@ -48,6 +48,8 @@ data class RewardCard(
     val isPredefined: Boolean = true,
     val isRedeemed: Boolean = false,
     val redeemedAtMs: Long? = null,
+    val lastRedeemedAtMs: Long? = null,
+    val timesRedeemed: Int = 0,
     val hasTask: Boolean = false,
     val taskType: String = "NONE", // NONE, COUNTER, CHEAT_DAY_ROUTINE
     val taskProgress: Int = 0,

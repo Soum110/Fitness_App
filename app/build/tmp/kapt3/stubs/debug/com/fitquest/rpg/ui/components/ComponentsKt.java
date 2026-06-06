@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier;
 import androidx.compose.ui.graphics.*;
 import androidx.compose.ui.graphics.drawscope.Stroke;
 import androidx.compose.ui.text.font.FontWeight;
+import androidx.compose.ui.text.style.TextDecoration;
 import androidx.compose.ui.unit.*;
 import com.fitquest.rpg.core.domain.model.*;
 import com.fitquest.rpg.ui.theme.*;
@@ -43,9 +44,6 @@ public final class ComponentsKt {
     androidx.compose.ui.Modifier modifier) {
     }
     
-    /**
-     * Streak fire indicator.
-     */
     @androidx.compose.runtime.Composable()
     public static final void StreakBadge(int streak, @org.jetbrains.annotations.NotNull()
     androidx.compose.ui.Modifier modifier) {

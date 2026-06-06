@@ -6,27 +6,27 @@
   <!-- Left Page Base (Teal Shadow) -->
   <path
       android:fillColor="#00838F"
-      android:pathData="M2,6l9,-2v14l-9,2z"/>
+      android:pathData="M2,4l9,2v14l-9,-2z"/>
   <!-- Right Page Base (Cyan Highlight) -->
   <path
       android:fillColor="#26C6DA"
-      android:pathData="M12,4l9,2v14l-9,-2z"/>
+      android:pathData="M12,6l9,-2v14l-9,2z"/>
 
   <!-- Left Inner Paper (Soft Teal/White) -->
   <path
       android:fillColor="#E0F7FA"
-      android:pathData="M3,6.8l8,-1.8v11.5l-8,1.8z"/>
+      android:pathData="M3,4.8l8,1.8v11.5l-8,-1.8z"/>
   <!-- Right Inner Paper (Pure White Highlight) -->
   <path
       android:fillColor="#FFFFFF"
-      android:pathData="M12,5l8,1.8v11.5l-8,-1.8z"/>
+      android:pathData="M12,6.6l8,-1.8v11.5l-8,1.8z"/>
 
   <!-- Bookmark String (Red Highlight) -->
   <path
       android:fillColor="#EF5350"
-      android:pathData="M11.5,4h1v10.5l-1,-1.5z"/>
+      android:pathData="M11.5,4h1v11.5l-1,-1.5z"/>
   <!-- Center Book Spine (Dark Cyan) -->
   <path
       android:fillColor="#006064"
-      android:pathData="M11,4h2v14h-2z"/>
+      android:pathData="M11,6h2v14h-2z"/>
 </vector>

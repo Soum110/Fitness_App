@@ -3,9 +3,9 @@ package com.fitquest.rpg.features.dashboard
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.launch
 import com.fitquest.rpg.core.domain.model.*
 import com.fitquest.rpg.ui.components.*
 import com.fitquest.rpg.ui.theme.*
@@ -44,7 +45,7 @@ fun DashboardScreen(
     // Level-up Fire Animation States
     val globalLevel = remember(uiState.attributes) {
         if (uiState.attributes.isEmpty()) 1
-        else uiState.attributes.map { it.level }.average().toInt()
+        else XpAlgorithm.globalLevelFromTotalXp(uiState.attributes.sumOf { it.totalXpEarned }).first
     }
     var lastLevel by remember { mutableStateOf<Int?>(null) }
     var showLevelUpAnimation by remember { mutableStateOf(false) }
@@ -148,11 +149,13 @@ fun DashboardScreen(
             .background(Color.Black)
     ) {
 
+        val listState = rememberLazyListState()
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(tween(800)) + slideInVertically(tween(800)) { it / 4 }
         ) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -182,43 +185,39 @@ fun DashboardScreen(
                     }
                 }
 
-                // ── Daily Quests ───────────────────────────────────────────
+                // ── Daily Quests Header & Tracker ──────────────────────────
                 item {
                     val done = uiState.todaysTasks.count { it.isCompleted }
                     val total = uiState.todaysTasks.size
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    "DAILY QUESTS",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    letterSpacing = 2.sp
-                                )
-                            }
+                        // Section title
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(20.dp)
+                            )
                             Text(
-                                text = "$done / $total completed",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 28.dp)
+                                "DAILY CAMPAIGN",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = 2.sp
                             )
                         }
-                        // Daily progress line
+
+                        // Quest Tracker Card
                         if (total > 0) {
-                            DailyProgressLine(done = done, total = total)
+                            QuestTrackerCard(done = done, total = total)
                         }
                     }
                 }
@@ -249,9 +248,17 @@ fun DashboardScreen(
                             visible = true,
                             enter = fadeIn() + expandVertically()
                         ) {
+                            val coroutineScope = rememberCoroutineScope()
                             TaskItem(
                                 task = task,
-                                onComplete = { viewModel.completeTask(task.id) },
+                                onComplete = {
+                                    viewModel.completeTask(task.id)
+                                    coroutineScope.launch {
+                                        try {
+                                            listState.animateScrollToItem(0)
+                                        } catch (e: Exception) {}
+                                    }
+                                },
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
@@ -432,17 +439,13 @@ private fun DashboardHeader(
 ) {
     val profile = state.profile
     val economy = state.economy
-    val overallRank = state.attributes.let { attrs ->
-        if (attrs.isEmpty()) Rank.BRONZE_RECRUIT
-        else Rank.fromLevel(attrs.map { it.level }.average().toInt())
-    }
+    val globalLevelPair = if (state.attributes.isEmpty()) Pair(1, 0f)
+    else XpAlgorithm.globalLevelFromTotalXp(state.attributes.sumOf { it.totalXpEarned })
+
+    val globalLevel = globalLevelPair.first
+    val globalProgressFraction = globalLevelPair.second
+    val overallRank = Rank.fromLevel(globalLevel)
     val rankColor = Color(overallRank.colorHex)
-
-    val globalLevel = if (state.attributes.isEmpty()) 1
-    else state.attributes.map { it.level }.average().toInt()
-
-    val globalProgressFraction = if (state.attributes.isEmpty()) 0f
-    else state.attributes.map { it.progressFraction }.average().toFloat()
 
     Column(
         modifier = Modifier
@@ -765,9 +768,9 @@ private fun ModularAttributeCard(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(6.dp)
-                            .background(Color(0xFF141414), RoundedCornerShape(3.dp))
-                            .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(3.dp))
+                            .height(10.dp)
+                            .background(Color(0xFF141414), RoundedCornerShape(5.dp))
+                            .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(5.dp))
                     ) {
                         // 1. Potential Gain Layer
                         if (totalPotentialProgress > currentProgress) {
@@ -779,7 +782,7 @@ private fun ModularAttributeCard(
                                         brush = Brush.horizontalGradient(
                                             listOf(attrColor.copy(alpha = pulseAlpha), attrColor.copy(alpha = pulseAlpha * 0.3f))
                                         ),
-                                        shape = RoundedCornerShape(3.dp)
+                                        shape = RoundedCornerShape(5.dp)
                                     )
                             )
                         }
@@ -789,7 +792,7 @@ private fun ModularAttributeCard(
                             modifier = Modifier
                                 .fillMaxWidth(animCurrentProgress)
                                 .fillMaxHeight()
-                                .background(attrColor, RoundedCornerShape(3.dp))
+                                .background(attrColor, RoundedCornerShape(5.dp))
                         )
                     }
 
@@ -829,53 +832,113 @@ private fun WeekPhaseBanner(description: String) {
 }
 
 @Composable
-private fun DailyProgressLine(done: Int, total: Int, modifier: Modifier = Modifier) {
+private fun QuestTrackerCard(done: Int, total: Int) {
     val progress = if (total > 0) done.toFloat() / total.toFloat() else 0f
     val animProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(1000, easing = FastOutSlowInEasing),
-        label = "dailyProgressLine"
+        label = "questTrackerProgress"
     )
 
-    val goldGlowTransition = rememberInfiniteTransition(label = "goldLineGlow")
+    val goldGlowTransition = rememberInfiniteTransition(label = "questTrackerGlow")
     val goldOffset by goldGlowTransition.animateFloat(
         initialValue = 0f, targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(3000), RepeatMode.Restart),
-        label = "goldLineOffset"
+        label = "questTrackerOffset"
     )
 
-    val brush = Brush.linearGradient(
+    val progressBrush = Brush.linearGradient(
         colors = listOf(Color(0xFFFFA000), Color(0xFFFFD700), Color(0xFFFFA000)),
         start = Offset(goldOffset * 500f - 250f, 0f),
         end = Offset(goldOffset * 500f + 250f, 0f)
     )
 
-    Column(
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = modifier
-    ) {
-        Text(
-            text = "$done / $total COMPLETE",
-            style = MaterialTheme.typography.labelMedium,
-            color = Color(0xFFFFD54F),
-            fontWeight = FontWeight.Black,
-            letterSpacing = 1.sp
-        )
+    val infiniteTransition = rememberInfiniteTransition(label = "indicatorPulse")
+    val indicatorAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "indicatorAlpha"
+    )
 
-        Box(
-            modifier = Modifier
-                .width(120.dp)
-                .height(6.dp)
-                .background(Color(0xFF141414), RoundedCornerShape(3.dp))
-                .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(3.dp))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = CardNavy),
+        border = BorderStroke(1.dp, BorderNavy)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "CAMPAIGN TRACKER",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF888888),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(SuccessGreen.copy(alpha = indicatorAlpha))
+                        )
+                        Text(
+                            text = "MISSION ACTIVE",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = SuccessGreen,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "$done / $total COMPLETED",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.5.sp
+                    )
+                    Text(
+                        text = "${(progress * 100).toInt()}% PROGRESS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFFFD54F),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+            }
+
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(animProgress)
-                    .fillMaxHeight()
-                    .background(brush, RoundedCornerShape(3.dp))
-            )
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .background(Color(0xFF141414), RoundedCornerShape(4.dp))
+                    .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(4.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(animProgress)
+                        .fillMaxHeight()
+                        .background(progressBrush, RoundedCornerShape(4.dp))
+                )
+            }
         }
     }
 }

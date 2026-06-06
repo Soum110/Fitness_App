@@ -13,7 +13,7 @@ import com.fitquest.rpg.core.data.local.entity.*
         RewardCardEntity::class,
         EconomyEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class FitQuestDatabase : RoomDatabase() {

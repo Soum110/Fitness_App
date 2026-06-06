@@ -134,7 +134,7 @@ private fun Step0Welcome(state: OnboardingState, vm: OnboardingViewModel) {
         Icon(
             painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
             contentDescription = null,
-            tint = Color.White,
+            tint = Color.Unspecified,
             modifier = Modifier.size(72.dp)
         )
         Spacer(Modifier.height(16.dp))

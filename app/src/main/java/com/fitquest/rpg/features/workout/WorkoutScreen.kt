@@ -135,7 +135,7 @@ fun WorkoutScreen(
         Spacer(Modifier.height(16.dp))
 
         if (state.workoutTasks.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     if (state.isLoading) {
                         CircularProgressIndicator(color = StrengthRed)
@@ -147,6 +147,7 @@ fun WorkoutScreen(
             }
         } else {
             LazyColumn(
+                modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {

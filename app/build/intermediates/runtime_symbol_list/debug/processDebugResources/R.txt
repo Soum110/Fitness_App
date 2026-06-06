@@ -722,6 +722,7 @@ int drawable ic_gift 0x7f070075
 int drawable ic_intelligence 0x7f070076
 int drawable ic_launcher_foreground 0x7f070077
 int drawable ic_meditation 0x7f070078
+int drawable ic_moon 0x7f07009f
 int drawable ic_other_sign_in 0x7f070079
 int drawable ic_passkey 0x7f07007a
 int drawable ic_password 0x7f07007b
@@ -732,6 +733,9 @@ int drawable ic_reading 0x7f07007f
 int drawable ic_stamina 0x7f070080
 int drawable ic_streak 0x7f070081
 int drawable ic_strength 0x7f070082
+int drawable ic_sun 0x7f0700a0
+int drawable ic_sunrise 0x7f0700a1
+int drawable ic_sunset 0x7f0700a2
 int drawable ic_tier_arise 0x7f070083
 int drawable ic_tier_bronze 0x7f070084
 int drawable ic_tier_crystal 0x7f070085
@@ -744,6 +748,7 @@ int drawable ic_tier_platinum 0x7f07008b
 int drawable ic_tier_steel 0x7f07008c
 int drawable ic_timer 0x7f07008d
 int drawable ic_tips 0x7f07008e
+int drawable ic_water 0x7f0700a3
 int drawable notification_action_background 0x7f07008f
 int drawable notification_bg 0x7f070090
 int drawable notification_bg_low 0x7f070091

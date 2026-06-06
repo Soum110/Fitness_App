@@ -1,9 +1,11 @@
 package com.fitquest.rpg.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +21,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.res.painterResource
 import com.fitquest.rpg.core.domain.model.*
@@ -204,85 +207,129 @@ fun TaskItem(
 ) {
     val attributeColor = Color(task.targetAttribute.color)
 
-    val checkAnim by animateFloatAsState(
-        targetValue = if (task.isCompleted) 1f else 0f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "checkAnim"
+    val backgroundColor by animateColorAsState(
+        targetValue = if (task.isCompleted) SuccessGreen.copy(alpha = 0.15f) else CardNavy,
+        animationSpec = tween(600),
+        label = "taskBgColor"
+    )
+    val borderStrokeColor by animateColorAsState(
+        targetValue = if (task.isCompleted) SuccessGreen.copy(alpha = 0.4f) else BorderNavy,
+        animationSpec = tween(600),
+        label = "taskBorderColor"
     )
 
-    RpgCard(
-        modifier = modifier.fillMaxWidth(),
-        glowColor = if (task.isCompleted) BorderNavy else BorderNavy
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = !task.isCompleted) { onComplete() },
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        border = BorderStroke(1.dp, borderStrokeColor)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Attribute color indicator bar (flat, no alpha gradient)
+            // Left vertical accent bar matching attribute's color
             Box(
                 modifier = Modifier
-                    .width(3.dp)
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(1.5.dp))
+                    .width(4.dp)
+                    .fillMaxHeight()
                     .background(attributeColor)
             )
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Top Row: task icon and themed quest type badge
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Icon(
                         painter = painterResource(id = task.taskType.iconResId()),
                         contentDescription = null,
                         tint = Color.Unspecified,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(16.dp)
                     )
-                    Text(
-                        text = task.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = if (task.isCompleted)
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        else
-                            MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                Spacer(Modifier.height(2.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (task.formattedVolume().isNotEmpty()) {
+                    
+                    Box(
+                        modifier = Modifier
+                            .background(attributeColor.copy(alpha = 0.08f), RoundedCornerShape(4.dp))
+                            .border(0.5.dp, attributeColor.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
                         Text(
-                            text = task.formattedVolume(),
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = "${task.targetAttribute.name} QUEST",
+                            style = MaterialTheme.typography.labelSmall,
                             color = attributeColor,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                     }
-                    Text(
-                        text = "+${task.xpReward} XP  +${task.apReward} AP",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = GoldAP.copy(alpha = 0.8f)
-                    )
                 }
-            }
 
-            // Completion check circle button
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (task.isCompleted) SuccessGreen.copy(alpha = checkAnim)
-                        else Color.Transparent
-                    )
-                    .border(
-                        width = 1.5.dp,
-                        color = if (task.isCompleted) SuccessGreen else BorderNavy,
-                        shape = CircleShape
-                    )
-                    .clickable(enabled = !task.isCompleted) { onComplete() }
-            ) {
-                if (task.isCompleted) {
-                    Text("✓", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                // Middle Row: bold quest title text (strikes through/fades on completion)
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (task.isCompleted)
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    else
+                        Color.White,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                )
+
+                // Bottom Row: volume text (uppercase) and horizontal row of reward pills
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (task.formattedVolume().isNotEmpty()) {
+                        Text(
+                            text = task.formattedVolume().uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = attributeColor,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+
+                    // Loot reward pill (+XP in GoldAP themed badge)
+                    Box(
+                        modifier = Modifier
+                            .background(GoldAP.copy(alpha = 0.08f), RoundedCornerShape(4.dp))
+                            .border(0.5.dp, GoldAP.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "+${task.xpReward} XP",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = GoldAP,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Loot reward pill (+AP in NeonGold themed badge)
+                    Box(
+                        modifier = Modifier
+                            .background(NeonGold.copy(alpha = 0.08f), RoundedCornerShape(4.dp))
+                            .border(0.5.dp, NeonGold.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "+${task.apReward} AP",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = NeonGold,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -320,8 +367,65 @@ fun ActionPointsChip(points: Int, modifier: Modifier = Modifier) {
 /**
  * Streak fire indicator.
  */
+private class StreakParticle(
+    var x: Float,
+    var y: Float,
+    val vx: Float,
+    val vy: Float,
+    val maxLife: Float,
+    var life: Float = maxLife,
+    val color: Color,
+    val size: Float
+)
+
 @Composable
 fun StreakBadge(streak: Int, modifier: Modifier = Modifier) {
+    val particles = remember { mutableStateListOf<StreakParticle>() }
+
+    LaunchedEffect(Unit) {
+        var lastTime = System.currentTimeMillis()
+        while (true) {
+            withFrameMillis { _ ->
+                val now = System.currentTimeMillis()
+                val dt = ((now - lastTime) / 1000f).coerceIn(0f, 0.05f)
+                lastTime = now
+
+                // Update existing particles
+                val iterator = particles.iterator()
+                while (iterator.hasNext()) {
+                    val p = iterator.next()
+                    p.life -= dt
+                    if (p.life <= 0f) {
+                        iterator.remove()
+                    } else {
+                        p.x += p.vx * dt
+                        p.y += p.vy * dt
+                    }
+                }
+
+                // Spawn new particles (larger, more frequent, moving upwards)
+                if (particles.size < 10 && Math.random() < 0.35) {
+                    val maxLife = 0.5f + (Math.random() * 0.4f).toFloat()
+                    particles.add(
+                        StreakParticle(
+                            x = (-50..50).random() / 10f,
+                            y = 0f,
+                            vx = (-80..80).random() / 10f, // minor drift
+                            vy = -70f - (Math.random() * 50f).toFloat(), // clear upward velocity
+                            maxLife = maxLife,
+                            color = when ((Math.random() * 3).toInt()) {
+                                0 -> Color(0xFFFFD54F) // Yellow
+                                1 -> Color(0xFFFF8A65) // Orange
+                                else -> Color(0xFFFF3D00) // Red
+                            },
+                            size = 3.5f + (Math.random() * 4f).toFloat() // larger, highly visible
+                        )
+                    )
+                }
+            }
+        }
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -330,12 +434,38 @@ fun StreakBadge(streak: Int, modifier: Modifier = Modifier) {
             .border(1.dp, Color(0xFFFF6D00).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
-        Icon(
-            painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_streak),
-            contentDescription = null,
-            tint = Color(0xFFFF8A65),
-            modifier = Modifier.size(12.dp)
-        )
+        Box(
+            modifier = Modifier.size(width = 18.dp, height = 30.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Icon(
+                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_streak),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .size(14.dp)
+                    .padding(bottom = 2.dp)
+            )
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val centerX = size.width / 2
+                val startY = size.height - 8.dp.toPx() // starts at the flame core base
+
+                particles.forEach { p ->
+                    val lifeFraction = p.life / p.maxLife
+                    val alpha = lifeFraction
+                    val radius = p.size * lifeFraction
+
+                    drawCircle(
+                        color = p.color.copy(alpha = alpha),
+                        radius = radius,
+                        center = Offset(centerX + p.x, startY + p.y),
+                        blendMode = BlendMode.Screen
+                    )
+                }
+            }
+        }
+
         Text(
             text = "$streak day${if (streak != 1) "s" else ""}",
             style = MaterialTheme.typography.labelLarge,
@@ -438,9 +568,9 @@ fun AttributeXpSlider(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(6.dp)
-                .background(Color(0xFF141414), RoundedCornerShape(3.dp))
-                .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(3.dp))
+                .height(10.dp)
+                .background(Color(0xFF141414), RoundedCornerShape(5.dp))
+                .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(5.dp))
         ) {
             // 1. Potential Gain Layer (pulsing/flashing preview, behind current XP but stretching further)
             if (totalPotentialProgress > currentProgress) {
@@ -452,7 +582,7 @@ fun AttributeXpSlider(
                             brush = Brush.horizontalGradient(
                                 listOf(attrColor.copy(alpha = pulseAlpha), attrColor.copy(alpha = pulseAlpha * 0.3f))
                             ),
-                            shape = RoundedCornerShape(3.dp)
+                            shape = RoundedCornerShape(5.dp)
                         )
                 )
             }
@@ -462,7 +592,7 @@ fun AttributeXpSlider(
                 modifier = Modifier
                     .fillMaxWidth(animCurrentProgress)
                     .fillMaxHeight()
-                    .background(attrColor, RoundedCornerShape(3.dp))
+                    .background(attrColor, RoundedCornerShape(5.dp))
             )
         }
 

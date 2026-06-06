@@ -369,9 +369,9 @@ private fun DetailedAttributeCard(attribute: Attribute, modifier: Modifier = Mod
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .background(Color(0xFF141414), RoundedCornerShape(3.dp))
-                    .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(3.dp))
+                    .height(10.dp)
+                    .background(Color(0xFF141414), RoundedCornerShape(5.dp))
+                    .border(0.5.dp, Color(0xFF2E2E2E), RoundedCornerShape(5.dp))
             ) {
                 Box(
                     modifier = Modifier
@@ -381,7 +381,7 @@ private fun DetailedAttributeCard(attribute: Attribute, modifier: Modifier = Mod
                             brush = Brush.horizontalGradient(
                                 listOf(attrColor, currentGlowColor)
                             ),
-                            shape = RoundedCornerShape(3.dp)
+                            shape = RoundedCornerShape(5.dp)
                         )
                 )
             }

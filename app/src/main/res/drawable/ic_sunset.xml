@@ -1,0 +1,56 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Setting Sun Left Facet (Peach Highlight) -->
+    <path
+        android:fillColor="#FFAB91"
+        android:pathData="M12,6 A5,5 0,0,0,7,11 L12,11 Z"/>
+
+    <!-- Setting Sun Right Facet (Deep Coral Shadow) -->
+    <path
+        android:fillColor="#FF7043"
+        android:pathData="M12,6 L12,11 L17,11 A5,5 0,0,0,12,6 Z"/>
+
+    <!-- Left Horizon Plate (Red Highlight) -->
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M2,13 L12,13 L12,14.5 L2,14.5 Z"/>
+
+    <!-- Right Horizon Plate (Dark Red Shadow) -->
+    <path
+        android:fillColor="#B71C1C"
+        android:pathData="M12,13 L22,13 L22,14.5 L12,14.5 Z"/>
+
+    <!-- Sea Reflection Left Half (Highlight) -->
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M5,16 L12,16 L12,17.5 L6,17.5 Z"/>
+
+    <!-- Sea Reflection Right Half (Shadow) -->
+    <path
+        android:fillColor="#E65100"
+        android:pathData="M12,16 L19,16 L18,17.5 L12,17.5 Z"/>
+
+    <!-- Sea Reflection Bottom Left -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="M8,19 L12,19 L12,20 L9,20 Z"/>
+
+    <!-- Sea Reflection Bottom Right -->
+    <path
+        android:fillColor="#F57C00"
+        android:pathData="M12,19 L16,19 L15,20 L12,20 Z"/>
+
+    <!-- Left Ray (Top Left - Highlight) -->
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M6,6.5 L7.5,5 L8.5,6 L7,7.5 Z"/>
+
+    <!-- Right Ray (Top Right - Shadow) -->
+    <path
+        android:fillColor="#D84315"
+        android:pathData="M18,6.5 L17,7.5 L15.5,6 L16.5,5 Z"/>
+</vector>
