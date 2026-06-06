@@ -1,9 +1,9 @@
 package com.fitquest.rpg.features.dashboard;
 
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import com.fitquest.rpg.core.data.repository.RewardCardRepository;
 import com.fitquest.rpg.core.data.repository.TaskRepository;
 import com.fitquest.rpg.core.data.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -32,11 +32,11 @@ public final class DashboardViewModel_Factory implements Factory<DashboardViewMo
 
   private final Provider<RewardCardRepository> cardRepoProvider;
 
-  private final Provider<FirebaseAuth> authProvider;
+  private final Provider<SupabaseAuth> authProvider;
 
   public DashboardViewModel_Factory(Provider<UserRepository> userRepoProvider,
       Provider<TaskRepository> taskRepoProvider, Provider<RewardCardRepository> cardRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     this.userRepoProvider = userRepoProvider;
     this.taskRepoProvider = taskRepoProvider;
     this.cardRepoProvider = cardRepoProvider;
@@ -50,12 +50,12 @@ public final class DashboardViewModel_Factory implements Factory<DashboardViewMo
 
   public static DashboardViewModel_Factory create(Provider<UserRepository> userRepoProvider,
       Provider<TaskRepository> taskRepoProvider, Provider<RewardCardRepository> cardRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     return new DashboardViewModel_Factory(userRepoProvider, taskRepoProvider, cardRepoProvider, authProvider);
   }
 
   public static DashboardViewModel newInstance(UserRepository userRepo, TaskRepository taskRepo,
-      RewardCardRepository cardRepo, FirebaseAuth auth) {
+      RewardCardRepository cardRepo, SupabaseAuth auth) {
     return new DashboardViewModel(userRepo, taskRepo, cardRepo, auth);
   }
 }

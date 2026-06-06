@@ -1,7 +1,7 @@
 package com.fitquest.rpg.features.diet;
 
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import com.fitquest.rpg.core.data.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -26,10 +26,10 @@ import javax.inject.Provider;
 public final class DietViewModel_Factory implements Factory<DietViewModel> {
   private final Provider<UserRepository> userRepoProvider;
 
-  private final Provider<FirebaseAuth> authProvider;
+  private final Provider<SupabaseAuth> authProvider;
 
   public DietViewModel_Factory(Provider<UserRepository> userRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     this.userRepoProvider = userRepoProvider;
     this.authProvider = authProvider;
   }
@@ -40,11 +40,11 @@ public final class DietViewModel_Factory implements Factory<DietViewModel> {
   }
 
   public static DietViewModel_Factory create(Provider<UserRepository> userRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     return new DietViewModel_Factory(userRepoProvider, authProvider);
   }
 
-  public static DietViewModel newInstance(UserRepository userRepo, FirebaseAuth auth) {
+  public static DietViewModel newInstance(UserRepository userRepo, SupabaseAuth auth) {
     return new DietViewModel(userRepo, auth);
   }
 }

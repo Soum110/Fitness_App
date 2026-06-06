@@ -188,7 +188,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
 
   @Override
   public Object insertAll(final List<RewardCardEntity> cards,
-      final Continuation<? super Unit> arg1) {
+      final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -202,11 +202,11 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
-  public Object insert(final RewardCardEntity card, final Continuation<? super Long> arg1) {
+  public Object insert(final RewardCardEntity card, final Continuation<? super Long> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -220,11 +220,11 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
-  public Object delete(final RewardCardEntity card, final Continuation<? super Unit> arg1) {
+  public Object delete(final RewardCardEntity card, final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -238,11 +238,11 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
-  public Object update(final RewardCardEntity card, final Continuation<? super Unit> arg1) {
+  public Object update(final RewardCardEntity card, final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -256,7 +256,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
@@ -510,7 +510,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
   }
 
   @Override
-  public Object countPredefinedCards(final Continuation<? super Integer> arg0) {
+  public Object countPredefinedCards(final Continuation<? super Integer> $completion) {
     final String _sql = "SELECT COUNT(*) FROM reward_cards WHERE isPredefined = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -538,7 +538,7 @@ public final class RewardCardDao_Impl implements RewardCardDao {
           _statement.release();
         }
       }
-    }, arg0);
+    }, $completion);
   }
 
   @NonNull

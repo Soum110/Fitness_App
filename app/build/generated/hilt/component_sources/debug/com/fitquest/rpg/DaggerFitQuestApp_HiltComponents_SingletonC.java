@@ -12,7 +12,9 @@ import com.fitquest.rpg.core.data.local.dao.DailyTaskDao;
 import com.fitquest.rpg.core.data.local.dao.EconomyDao;
 import com.fitquest.rpg.core.data.local.dao.RewardCardDao;
 import com.fitquest.rpg.core.data.local.dao.UserProfileDao;
-import com.fitquest.rpg.core.data.remote.FirestoreRepository;
+import com.fitquest.rpg.core.data.remote.SupabaseApiService;
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
+import com.fitquest.rpg.core.data.remote.SupabaseRepository;
 import com.fitquest.rpg.core.data.remote.WgerApiService;
 import com.fitquest.rpg.core.data.repository.RewardCardRepository;
 import com.fitquest.rpg.core.data.repository.TaskRepository;
@@ -23,10 +25,10 @@ import com.fitquest.rpg.core.di.DatabaseModule_ProvideDatabaseFactory;
 import com.fitquest.rpg.core.di.DatabaseModule_ProvideEconomyDaoFactory;
 import com.fitquest.rpg.core.di.DatabaseModule_ProvideRewardCardDaoFactory;
 import com.fitquest.rpg.core.di.DatabaseModule_ProvideUserProfileDaoFactory;
-import com.fitquest.rpg.core.di.FirebaseModule_ProvideFirebaseAuthFactory;
-import com.fitquest.rpg.core.di.FirebaseModule_ProvideFirestoreFactory;
 import com.fitquest.rpg.core.di.NetworkModule_ProvideOkHttpClientFactory;
 import com.fitquest.rpg.core.di.NetworkModule_ProvideWgerApiServiceFactory;
+import com.fitquest.rpg.core.di.SupabaseModule_ProvideSupabaseApiServiceFactory;
+import com.fitquest.rpg.core.di.SupabaseModule_ProvideSupabaseAuthFactory;
 import com.fitquest.rpg.features.attributes.AttributesViewModel;
 import com.fitquest.rpg.features.attributes.AttributesViewModel_HiltModules;
 import com.fitquest.rpg.features.auth.AuthViewModel;
@@ -45,11 +47,6 @@ import com.fitquest.rpg.features.store.StoreViewModel;
 import com.fitquest.rpg.features.store.StoreViewModel_HiltModules;
 import com.fitquest.rpg.features.workout.WorkoutViewModel;
 import com.fitquest.rpg.features.workout.WorkoutViewModel_HiltModules;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.internal.builders.ActivityComponentBuilder;
@@ -70,8 +67,10 @@ import dagger.internal.DoubleCheck;
 import dagger.internal.IdentifierNameString;
 import dagger.internal.KeepFieldType;
 import dagger.internal.LazyClassKeyMap;
+import dagger.internal.MapBuilder;
 import dagger.internal.Preconditions;
 import dagger.internal.Provider;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Generated;
@@ -410,7 +409,7 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, Boolean> getViewModelKeys() {
-      return LazyClassKeyMap.<Boolean>of(ImmutableMap.<String, Boolean>builderWithExpectedSize(9).put(LazyClassKeyProvider.com_fitquest_rpg_features_attributes_AttributesViewModel, AttributesViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_auth_AuthViewModel, AuthViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_dashboard_DashboardViewModel, DashboardViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_diet_DietViewModel, DietViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_onboarding_OnboardingViewModel, OnboardingViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_profile_ProfileViewModel, ProfileViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_roadmap_RoadmapViewModel, RoadmapViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_store_StoreViewModel, StoreViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_workout_WorkoutViewModel, WorkoutViewModel_HiltModules.KeyModule.provide()).build());
+      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(9).put(LazyClassKeyProvider.com_fitquest_rpg_features_attributes_AttributesViewModel, AttributesViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_auth_AuthViewModel, AuthViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_dashboard_DashboardViewModel, DashboardViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_diet_DietViewModel, DietViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_onboarding_OnboardingViewModel, OnboardingViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_profile_ProfileViewModel, ProfileViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_roadmap_RoadmapViewModel, RoadmapViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_store_StoreViewModel, StoreViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_fitquest_rpg_features_workout_WorkoutViewModel, WorkoutViewModel_HiltModules.KeyModule.provide()).build());
     }
 
     @Override
@@ -428,40 +427,36 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
       return new ViewCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
     }
 
-    @CanIgnoreReturnValue
     private MainActivity injectMainActivity2(MainActivity instance) {
-      MainActivity_MembersInjector.injectFirebaseAuth(instance, singletonCImpl.provideFirebaseAuthProvider.get());
+      MainActivity_MembersInjector.injectSupabaseAuth(instance, singletonCImpl.provideSupabaseAuthProvider.get());
       return instance;
     }
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
+      static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
+
       static String com_fitquest_rpg_features_workout_WorkoutViewModel = "com.fitquest.rpg.features.workout.WorkoutViewModel";
-
-      static String com_fitquest_rpg_features_attributes_AttributesViewModel = "com.fitquest.rpg.features.attributes.AttributesViewModel";
-
-      static String com_fitquest_rpg_features_profile_ProfileViewModel = "com.fitquest.rpg.features.profile.ProfileViewModel";
 
       static String com_fitquest_rpg_features_auth_AuthViewModel = "com.fitquest.rpg.features.auth.AuthViewModel";
 
       static String com_fitquest_rpg_features_dashboard_DashboardViewModel = "com.fitquest.rpg.features.dashboard.DashboardViewModel";
 
-      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
+      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
 
       static String com_fitquest_rpg_features_store_StoreViewModel = "com.fitquest.rpg.features.store.StoreViewModel";
 
-      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
+      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
 
-      static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
+      static String com_fitquest_rpg_features_profile_ProfileViewModel = "com.fitquest.rpg.features.profile.ProfileViewModel";
+
+      static String com_fitquest_rpg_features_attributes_AttributesViewModel = "com.fitquest.rpg.features.attributes.AttributesViewModel";
+
+      @KeepFieldType
+      RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
 
       @KeepFieldType
       WorkoutViewModel com_fitquest_rpg_features_workout_WorkoutViewModel2;
-
-      @KeepFieldType
-      AttributesViewModel com_fitquest_rpg_features_attributes_AttributesViewModel2;
-
-      @KeepFieldType
-      ProfileViewModel com_fitquest_rpg_features_profile_ProfileViewModel2;
 
       @KeepFieldType
       AuthViewModel com_fitquest_rpg_features_auth_AuthViewModel2;
@@ -470,16 +465,19 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
       DashboardViewModel com_fitquest_rpg_features_dashboard_DashboardViewModel2;
 
       @KeepFieldType
-      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
+      OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
 
       @KeepFieldType
       StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
 
       @KeepFieldType
-      OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
+      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
 
       @KeepFieldType
-      RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
+      ProfileViewModel com_fitquest_rpg_features_profile_ProfileViewModel2;
+
+      @KeepFieldType
+      AttributesViewModel com_fitquest_rpg_features_attributes_AttributesViewModel2;
     }
   }
 
@@ -534,60 +532,60 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(ImmutableMap.<String, javax.inject.Provider<ViewModel>>builderWithExpectedSize(9).put(LazyClassKeyProvider.com_fitquest_rpg_features_attributes_AttributesViewModel, ((Provider) attributesViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_auth_AuthViewModel, ((Provider) authViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_dashboard_DashboardViewModel, ((Provider) dashboardViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_diet_DietViewModel, ((Provider) dietViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_onboarding_OnboardingViewModel, ((Provider) onboardingViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_profile_ProfileViewModel, ((Provider) profileViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_roadmap_RoadmapViewModel, ((Provider) roadmapViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_store_StoreViewModel, ((Provider) storeViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_workout_WorkoutViewModel, ((Provider) workoutViewModelProvider)).build());
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(9).put(LazyClassKeyProvider.com_fitquest_rpg_features_attributes_AttributesViewModel, ((Provider) attributesViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_auth_AuthViewModel, ((Provider) authViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_dashboard_DashboardViewModel, ((Provider) dashboardViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_diet_DietViewModel, ((Provider) dietViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_onboarding_OnboardingViewModel, ((Provider) onboardingViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_profile_ProfileViewModel, ((Provider) profileViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_roadmap_RoadmapViewModel, ((Provider) roadmapViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_store_StoreViewModel, ((Provider) storeViewModelProvider)).put(LazyClassKeyProvider.com_fitquest_rpg_features_workout_WorkoutViewModel, ((Provider) workoutViewModelProvider)).build());
     }
 
     @Override
     public Map<Class<?>, Object> getHiltViewModelAssistedMap() {
-      return ImmutableMap.<Class<?>, Object>of();
+      return Collections.<Class<?>, Object>emptyMap();
     }
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_fitquest_rpg_features_dashboard_DashboardViewModel = "com.fitquest.rpg.features.dashboard.DashboardViewModel";
+      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
 
       static String com_fitquest_rpg_features_profile_ProfileViewModel = "com.fitquest.rpg.features.profile.ProfileViewModel";
 
-      static String com_fitquest_rpg_features_attributes_AttributesViewModel = "com.fitquest.rpg.features.attributes.AttributesViewModel";
-
-      static String com_fitquest_rpg_features_auth_AuthViewModel = "com.fitquest.rpg.features.auth.AuthViewModel";
-
       static String com_fitquest_rpg_features_store_StoreViewModel = "com.fitquest.rpg.features.store.StoreViewModel";
-
-      static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
-
-      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
-
-      static String com_fitquest_rpg_features_onboarding_OnboardingViewModel = "com.fitquest.rpg.features.onboarding.OnboardingViewModel";
 
       static String com_fitquest_rpg_features_workout_WorkoutViewModel = "com.fitquest.rpg.features.workout.WorkoutViewModel";
 
-      @KeepFieldType
-      DashboardViewModel com_fitquest_rpg_features_dashboard_DashboardViewModel2;
+      static String com_fitquest_rpg_features_dashboard_DashboardViewModel = "com.fitquest.rpg.features.dashboard.DashboardViewModel";
 
-      @KeepFieldType
-      ProfileViewModel com_fitquest_rpg_features_profile_ProfileViewModel2;
+      static String com_fitquest_rpg_features_auth_AuthViewModel = "com.fitquest.rpg.features.auth.AuthViewModel";
 
-      @KeepFieldType
-      AttributesViewModel com_fitquest_rpg_features_attributes_AttributesViewModel2;
+      static String com_fitquest_rpg_features_diet_DietViewModel = "com.fitquest.rpg.features.diet.DietViewModel";
 
-      @KeepFieldType
-      AuthViewModel com_fitquest_rpg_features_auth_AuthViewModel2;
+      static String com_fitquest_rpg_features_attributes_AttributesViewModel = "com.fitquest.rpg.features.attributes.AttributesViewModel";
 
-      @KeepFieldType
-      StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
-
-      @KeepFieldType
-      RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
-
-      @KeepFieldType
-      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
+      static String com_fitquest_rpg_features_roadmap_RoadmapViewModel = "com.fitquest.rpg.features.roadmap.RoadmapViewModel";
 
       @KeepFieldType
       OnboardingViewModel com_fitquest_rpg_features_onboarding_OnboardingViewModel2;
 
       @KeepFieldType
+      ProfileViewModel com_fitquest_rpg_features_profile_ProfileViewModel2;
+
+      @KeepFieldType
+      StoreViewModel com_fitquest_rpg_features_store_StoreViewModel2;
+
+      @KeepFieldType
       WorkoutViewModel com_fitquest_rpg_features_workout_WorkoutViewModel2;
+
+      @KeepFieldType
+      DashboardViewModel com_fitquest_rpg_features_dashboard_DashboardViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_fitquest_rpg_features_auth_AuthViewModel2;
+
+      @KeepFieldType
+      DietViewModel com_fitquest_rpg_features_diet_DietViewModel2;
+
+      @KeepFieldType
+      AttributesViewModel com_fitquest_rpg_features_attributes_AttributesViewModel2;
+
+      @KeepFieldType
+      RoadmapViewModel com_fitquest_rpg_features_roadmap_RoadmapViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -612,31 +610,31 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // com.fitquest.rpg.features.attributes.AttributesViewModel 
-          return (T) new AttributesViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new AttributesViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 1: // com.fitquest.rpg.features.auth.AuthViewModel 
-          return (T) new AuthViewModel(singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new AuthViewModel(singletonCImpl.provideSupabaseAuthProvider.get(), singletonCImpl.userRepositoryProvider.get(), singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.provideDatabaseProvider.get());
 
           case 2: // com.fitquest.rpg.features.dashboard.DashboardViewModel 
-          return (T) new DashboardViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new DashboardViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 3: // com.fitquest.rpg.features.diet.DietViewModel 
-          return (T) new DietViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new DietViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 4: // com.fitquest.rpg.features.onboarding.OnboardingViewModel 
-          return (T) new OnboardingViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new OnboardingViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 5: // com.fitquest.rpg.features.profile.ProfileViewModel 
-          return (T) new ProfileViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.firestoreRepositoryProvider.get(), singletonCImpl.provideDatabaseProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new ProfileViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.supabaseRepositoryProvider.get(), singletonCImpl.provideDatabaseProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 6: // com.fitquest.rpg.features.roadmap.RoadmapViewModel 
-          return (T) new RoadmapViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new RoadmapViewModel(singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 7: // com.fitquest.rpg.features.store.StoreViewModel 
-          return (T) new StoreViewModel(singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new StoreViewModel(singletonCImpl.rewardCardRepositoryProvider.get(), singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 8: // com.fitquest.rpg.features.workout.WorkoutViewModel 
-          return (T) new WorkoutViewModel(singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideFirebaseAuthProvider.get());
+          return (T) new WorkoutViewModel(singletonCImpl.taskRepositoryProvider.get(), singletonCImpl.userRepositoryProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           default: throw new AssertionError(id);
         }
@@ -718,13 +716,13 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
 
     private final SingletonCImpl singletonCImpl = this;
 
-    private Provider<FirebaseAuth> provideFirebaseAuthProvider;
+    private Provider<SupabaseApiService> provideSupabaseApiServiceProvider;
+
+    private Provider<SupabaseAuth> provideSupabaseAuthProvider;
 
     private Provider<FitQuestDatabase> provideDatabaseProvider;
 
-    private Provider<FirebaseFirestore> provideFirestoreProvider;
-
-    private Provider<FirestoreRepository> firestoreRepositoryProvider;
+    private Provider<SupabaseRepository> supabaseRepositoryProvider;
 
     private Provider<UserRepository> userRepositoryProvider;
 
@@ -764,11 +762,11 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
 
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
-      this.provideFirebaseAuthProvider = DoubleCheck.provider(new SwitchingProvider<FirebaseAuth>(singletonCImpl, 0));
-      this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<FitQuestDatabase>(singletonCImpl, 2));
-      this.provideFirestoreProvider = DoubleCheck.provider(new SwitchingProvider<FirebaseFirestore>(singletonCImpl, 4));
-      this.firestoreRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<FirestoreRepository>(singletonCImpl, 3));
-      this.userRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UserRepository>(singletonCImpl, 1));
+      this.provideSupabaseApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<SupabaseApiService>(singletonCImpl, 1));
+      this.provideSupabaseAuthProvider = DoubleCheck.provider(new SwitchingProvider<SupabaseAuth>(singletonCImpl, 0));
+      this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<FitQuestDatabase>(singletonCImpl, 3));
+      this.supabaseRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SupabaseRepository>(singletonCImpl, 4));
+      this.userRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UserRepository>(singletonCImpl, 2));
       this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 7));
       this.provideWgerApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<WgerApiService>(singletonCImpl, 6));
       this.taskRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<TaskRepository>(singletonCImpl, 5));
@@ -781,7 +779,7 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
 
     @Override
     public Set<Boolean> getDisableFragmentGetContextFix() {
-      return ImmutableSet.<Boolean>of();
+      return Collections.<Boolean>emptySet();
     }
 
     @Override
@@ -808,23 +806,23 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.google.firebase.auth.FirebaseAuth 
-          return (T) FirebaseModule_ProvideFirebaseAuthFactory.provideFirebaseAuth();
+          case 0: // com.fitquest.rpg.core.data.remote.SupabaseAuth 
+          return (T) SupabaseModule_ProvideSupabaseAuthFactory.provideSupabaseAuth(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideSupabaseApiServiceProvider.get());
 
-          case 1: // com.fitquest.rpg.core.data.repository.UserRepository 
-          return (T) new UserRepository(singletonCImpl.userProfileDao(), singletonCImpl.attributeDao(), singletonCImpl.economyDao(), singletonCImpl.firestoreRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+          case 1: // com.fitquest.rpg.core.data.remote.SupabaseApiService 
+          return (T) SupabaseModule_ProvideSupabaseApiServiceFactory.provideSupabaseApiService();
 
-          case 2: // com.fitquest.rpg.core.data.local.FitQuestDatabase 
+          case 2: // com.fitquest.rpg.core.data.repository.UserRepository 
+          return (T) new UserRepository(singletonCImpl.userProfileDao(), singletonCImpl.attributeDao(), singletonCImpl.economyDao(), singletonCImpl.supabaseRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 3: // com.fitquest.rpg.core.data.local.FitQuestDatabase 
           return (T) DatabaseModule_ProvideDatabaseFactory.provideDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 3: // com.fitquest.rpg.core.data.remote.FirestoreRepository 
-          return (T) new FirestoreRepository(singletonCImpl.provideFirestoreProvider.get());
-
-          case 4: // com.google.firebase.firestore.FirebaseFirestore 
-          return (T) FirebaseModule_ProvideFirestoreFactory.provideFirestore();
+          case 4: // com.fitquest.rpg.core.data.remote.SupabaseRepository 
+          return (T) new SupabaseRepository(singletonCImpl.provideSupabaseApiServiceProvider.get(), singletonCImpl.provideSupabaseAuthProvider.get());
 
           case 5: // com.fitquest.rpg.core.data.repository.TaskRepository 
-          return (T) new TaskRepository(singletonCImpl.dailyTaskDao(), singletonCImpl.attributeDao(), singletonCImpl.firestoreRepositoryProvider.get(), singletonCImpl.provideWgerApiServiceProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+          return (T) new TaskRepository(singletonCImpl.dailyTaskDao(), singletonCImpl.attributeDao(), singletonCImpl.supabaseRepositoryProvider.get(), singletonCImpl.provideWgerApiServiceProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 6: // com.fitquest.rpg.core.data.remote.WgerApiService 
           return (T) NetworkModule_ProvideWgerApiServiceFactory.provideWgerApiService(singletonCImpl.provideOkHttpClientProvider.get());
@@ -833,7 +831,7 @@ public final class DaggerFitQuestApp_HiltComponents_SingletonC {
           return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient();
 
           case 8: // com.fitquest.rpg.core.data.repository.RewardCardRepository 
-          return (T) new RewardCardRepository(singletonCImpl.rewardCardDao(), singletonCImpl.firestoreRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+          return (T) new RewardCardRepository(singletonCImpl.rewardCardDao(), singletonCImpl.supabaseRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }

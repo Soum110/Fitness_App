@@ -3,7 +3,7 @@ package com.fitquest.rpg.core.data.repository;
 import android.content.Context;
 import com.fitquest.rpg.core.data.local.dao.AttributeDao;
 import com.fitquest.rpg.core.data.local.dao.DailyTaskDao;
-import com.fitquest.rpg.core.data.remote.FirestoreRepository;
+import com.fitquest.rpg.core.data.remote.SupabaseRepository;
 import com.fitquest.rpg.core.data.remote.WgerApiService;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
@@ -31,7 +31,7 @@ public final class TaskRepository_Factory implements Factory<TaskRepository> {
 
   private final Provider<AttributeDao> attributeDaoProvider;
 
-  private final Provider<FirestoreRepository> firestoreRepoProvider;
+  private final Provider<SupabaseRepository> supabaseRepoProvider;
 
   private final Provider<WgerApiService> wgerApiProvider;
 
@@ -39,29 +39,29 @@ public final class TaskRepository_Factory implements Factory<TaskRepository> {
 
   public TaskRepository_Factory(Provider<DailyTaskDao> taskDaoProvider,
       Provider<AttributeDao> attributeDaoProvider,
-      Provider<FirestoreRepository> firestoreRepoProvider, Provider<WgerApiService> wgerApiProvider,
+      Provider<SupabaseRepository> supabaseRepoProvider, Provider<WgerApiService> wgerApiProvider,
       Provider<Context> contextProvider) {
     this.taskDaoProvider = taskDaoProvider;
     this.attributeDaoProvider = attributeDaoProvider;
-    this.firestoreRepoProvider = firestoreRepoProvider;
+    this.supabaseRepoProvider = supabaseRepoProvider;
     this.wgerApiProvider = wgerApiProvider;
     this.contextProvider = contextProvider;
   }
 
   @Override
   public TaskRepository get() {
-    return newInstance(taskDaoProvider.get(), attributeDaoProvider.get(), firestoreRepoProvider.get(), wgerApiProvider.get(), contextProvider.get());
+    return newInstance(taskDaoProvider.get(), attributeDaoProvider.get(), supabaseRepoProvider.get(), wgerApiProvider.get(), contextProvider.get());
   }
 
   public static TaskRepository_Factory create(Provider<DailyTaskDao> taskDaoProvider,
       Provider<AttributeDao> attributeDaoProvider,
-      Provider<FirestoreRepository> firestoreRepoProvider, Provider<WgerApiService> wgerApiProvider,
+      Provider<SupabaseRepository> supabaseRepoProvider, Provider<WgerApiService> wgerApiProvider,
       Provider<Context> contextProvider) {
-    return new TaskRepository_Factory(taskDaoProvider, attributeDaoProvider, firestoreRepoProvider, wgerApiProvider, contextProvider);
+    return new TaskRepository_Factory(taskDaoProvider, attributeDaoProvider, supabaseRepoProvider, wgerApiProvider, contextProvider);
   }
 
   public static TaskRepository newInstance(DailyTaskDao taskDao, AttributeDao attributeDao,
-      FirestoreRepository firestoreRepo, WgerApiService wgerApi, Context context) {
-    return new TaskRepository(taskDao, attributeDao, firestoreRepo, wgerApi, context);
+      SupabaseRepository supabaseRepo, WgerApiService wgerApi, Context context) {
+    return new TaskRepository(taskDao, attributeDao, supabaseRepo, wgerApi, context);
   }
 }

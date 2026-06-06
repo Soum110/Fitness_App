@@ -28,15 +28,38 @@ import kotlinx.coroutines.launch
 import com.fitquest.rpg.core.domain.model.*
 import com.fitquest.rpg.ui.components.*
 import com.fitquest.rpg.ui.theme.*
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalContext
+import java.util.Calendar
+import java.util.Locale
+import java.text.SimpleDateFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onNavigateToStore: () -> Unit,
     onNavigateToAttributes: () -> Unit,
+    onNavigateToOnboarding: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    // Onboarding Tutorial Tour States
+    val context = LocalContext.current
+    var showTutorial by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableStateOf(0) }
+    val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
+
+    LaunchedEffect(uiState.profile, uiState.isLoading) {
+        if (!uiState.isLoading) {
+            val profile = uiState.profile
+            if (profile == null || !profile.onboardingComplete) {
+                onNavigateToOnboarding()
+            } else {
+                showTutorial = !TutorialManager.isTutorialCompleted(context, "dashboard")
+            }
+        }
+    }
 
     // Entrance animation
     var visible by remember { mutableStateOf(false) }
@@ -48,19 +71,25 @@ fun DashboardScreen(
         else XpAlgorithm.globalLevelFromTotalXp(uiState.attributes.sumOf { it.totalXpEarned }).first
     }
     var lastLevel by remember { mutableStateOf<Int?>(null) }
+    var attributesWasEmpty by remember { mutableStateOf(true) }
     var showLevelUpAnimation by remember { mutableStateOf(false) }
     var showNewLevel by remember { mutableStateOf(1) }
     var showPrevLevel by remember { mutableStateOf(1) }
     
     val particles = remember { mutableStateListOf<FireParticle>() }
     
-    LaunchedEffect(globalLevel) {
-        val prev = lastLevel
-        lastLevel = globalLevel
-        if (prev != null && globalLevel > prev) {
-            showPrevLevel = prev
-            showNewLevel = globalLevel
-            showLevelUpAnimation = true
+    LaunchedEffect(globalLevel, uiState.isLoading) {
+        if (!uiState.isLoading) {
+            val prev = lastLevel
+            val prevWasEmpty = attributesWasEmpty
+            lastLevel = globalLevel
+            attributesWasEmpty = uiState.attributes.isEmpty()
+            
+            if (prev != null && !prevWasEmpty && globalLevel > prev) {
+                showPrevLevel = prev
+                showNewLevel = globalLevel
+                showLevelUpAnimation = true
+            }
         }
     }
     
@@ -147,9 +176,26 @@ fun DashboardScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
 
         val listState = rememberLazyListState()
+        
+        LaunchedEffect(tutorialStep, showTutorial, uiState.todaysTasks) {
+            if (showTutorial) {
+                val targetIndex = when (tutorialStep) {
+                    0 -> 0 // header
+                    1 -> 0 // ap_chip
+                    2 -> 1 // daily_quests
+                    3 -> 3 + uiState.todaysTasks.size // graph_analysis
+                    else -> 0
+                }
+                try {
+                    listState.animateScrollToItem(targetIndex)
+                } catch (e: Exception) {}
+            }
+        }
+
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(tween(800)) + slideInVertically(tween(800)) { it / 4 }
@@ -165,24 +211,9 @@ fun DashboardScreen(
                     DashboardHeader(
                         state = uiState,
                         onNavigateToStore = onNavigateToStore,
-                        onNavigateToAttributes = onNavigateToAttributes
+                        onNavigateToAttributes = onNavigateToAttributes,
+                        tutorialAnchors = tutorialAnchors
                     )
-                }
-
-                // ── Attributes Grid ────────────────────────────────────────
-                item {
-                    AttributesSection(
-                        attributes = uiState.attributes,
-                        todaysTasks = uiState.todaysTasks,
-                        onViewAll = onNavigateToAttributes
-                    )
-                }
-
-                // ── Week Phase Banner ──────────────────────────────────────
-                if (uiState.weekPhaseDescription.isNotEmpty()) {
-                    item {
-                        WeekPhaseBanner(uiState.weekPhaseDescription)
-                    }
                 }
 
                 // ── Daily Quests Header & Tracker ──────────────────────────
@@ -193,7 +224,8 @@ fun DashboardScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp)
+                            .tutorialAnchor("daily_quests", tutorialAnchors),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // Section title
@@ -263,6 +295,24 @@ fun DashboardScreen(
                             )
                         }
                     }
+                }
+
+                // ── Attributes Grid ────────────────────────────────────────
+                item {
+                    AttributesSection(
+                        attributes = uiState.attributes,
+                        todaysTasks = uiState.todaysTasks,
+                        onViewAll = onNavigateToAttributes
+                    )
+                }
+
+                // ── Graphical Analysis ─────────────────────────────────────
+                item {
+                    QuestGraphicalAnalysisCard(
+                        todaysTasks = uiState.todaysTasks,
+                        profile = uiState.profile,
+                        modifier = Modifier.tutorialAnchor("graph_analysis", tutorialAnchors)
+                    )
                 }
 
                 // ── Motivational Quote ─────────────────────────────────────
@@ -428,6 +478,37 @@ fun DashboardScreen(
                 }
             }
         }
+
+        // Onboarding Tutorial Overlay
+        if (showTutorial && tutorialAnchors.isNotEmpty()) {
+            val steps = listOf(
+                TutorialStep("header", "Level & XP HUD", "This is your main character progression. Complete quests to gain XP and increase your system ascension level!"),
+                TutorialStep("ap_chip", "Action Points (AP)", "Earn AP from daily activities to spend on custom shop rewards or redeem cheat days."),
+                TutorialStep("daily_quests", "Daily Campaign", "Your active quests for today. Tap on any quest card to complete it and claim your XP & AP rewards."),
+                TutorialStep("graph_analysis", "Quest Analysis", "Tracks your quest completion performance over Days (D), Weeks (W), and Months (M).")
+            )
+            val currentStep = steps.getOrNull(tutorialStep)
+            if (currentStep != null) {
+                TutorialOverlay(
+                    step = currentStep,
+                    anchorRect = calculateLocalRect(tutorialAnchors[currentStep.anchorKey], tutorialAnchors["screen_root"]),
+                    onNext = {
+                        if (tutorialStep < steps.lastIndex) {
+                            tutorialStep++
+                        } else {
+                            showTutorial = false
+                            TutorialManager.setTutorialCompleted(context, "dashboard", true)
+                        }
+                    },
+                    onSkip = {
+                        showTutorial = false
+                        TutorialManager.setTutorialCompleted(context, "dashboard", true)
+                    },
+                    currentStepIndex = tutorialStep,
+                    totalSteps = steps.size
+                )
+            }
+        }
     }
 }
 
@@ -435,7 +516,8 @@ fun DashboardScreen(
 private fun DashboardHeader(
     state: DashboardUiState,
     onNavigateToStore: () -> Unit,
-    onNavigateToAttributes: () -> Unit
+    onNavigateToAttributes: () -> Unit,
+    tutorialAnchors: MutableMap<String, Rect>
 ) {
     val profile = state.profile
     val economy = state.economy
@@ -496,7 +578,9 @@ private fun DashboardHeader(
             // AP button
             ActionPointsChip(
                 points = economy.availableActionPoints,
-                modifier = Modifier.clickable { onNavigateToStore() }
+                modifier = Modifier
+                    .clickable { onNavigateToStore() }
+                    .tutorialAnchor("ap_chip", tutorialAnchors)
             )
         }
 
@@ -513,7 +597,8 @@ private fun DashboardHeader(
                 .height(38.dp)
                 .clip(RoundedCornerShape(6.dp))
                 .background(CardNavy)
-                .border(1.dp, BorderNavy, RoundedCornerShape(6.dp)),
+                .border(1.dp, BorderNavy, RoundedCornerShape(6.dp))
+                .tutorialAnchor("header", tutorialAnchors),
             contentAlignment = Alignment.CenterStart
         ) {
             // Fill background
@@ -813,21 +898,339 @@ private fun ModularAttributeCard(
     }
 }
 
+private enum class AnalysisPeriod { DAY, WEEK, MONTH }
+
 @Composable
-private fun WeekPhaseBanner(description: String) {
-    Box(
-        modifier = Modifier
+private fun QuestGraphicalAnalysisCard(
+    todaysTasks: List<DailyTask>,
+    profile: UserProfile?,
+    modifier: Modifier = Modifier
+) {
+    var selectedPeriod by remember { mutableStateOf(AnalysisPeriod.DAY) }
+    val todayCompleted = remember(todaysTasks) { todaysTasks.count { it.isCompleted } }
+
+    val daysLabels = remember {
+        val sdf = SimpleDateFormat("EEE", Locale.getDefault())
+        val cal = Calendar.getInstance()
+        val list = mutableListOf<String>()
+        for (i in 6 downTo 0) {
+            val c = cal.clone() as Calendar
+            c.add(Calendar.DAY_OF_YEAR, -i)
+            list.add(sdf.format(c.time))
+        }
+        list
+    }
+
+    val weeksLabels = listOf("Wk -3", "Wk -2", "Wk -1", "Current")
+
+    val monthsLabels = remember {
+        val sdf = SimpleDateFormat("MMM", Locale.getDefault())
+        val cal = Calendar.getInstance()
+        val list = mutableListOf<String>()
+        for (i in 5 downTo 0) {
+            val c = cal.clone() as Calendar
+            c.add(Calendar.MONTH, -i)
+            list.add(sdf.format(c.time))
+        }
+        list
+    }
+
+    val joinDateMs = profile?.joinDateMs ?: System.currentTimeMillis()
+
+    val dataPoints = remember(selectedPeriod, todayCompleted, joinDateMs) {
+        when (selectedPeriod) {
+            AnalysisPeriod.DAY -> {
+                val cal = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val startOfToday = cal.timeInMillis
+                val mockDays = listOf(3f, 4f, 2f, 5f, 3f, 4f)
+                
+                val points = mutableListOf<Float>()
+                for (i in 0 until 6) {
+                    val dayStartMs = startOfToday - (6 - i) * 86400000L
+                    if (dayStartMs + 86400000L < joinDateMs) {
+                        points.add(0f)
+                    } else {
+                        points.add(mockDays[i])
+                    }
+                }
+                points.add(todayCompleted.toFloat())
+                points
+            }
+            AnalysisPeriod.WEEK -> {
+                val cal = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+                val daysToSubtract = (dayOfWeek - Calendar.MONDAY + 7) % 7
+                cal.add(Calendar.DAY_OF_YEAR, -daysToSubtract)
+                val startOfWeek = cal.timeInMillis
+                
+                val mockWeeks = listOf(18f, 22f, 15f)
+                val points = mutableListOf<Float>()
+                for (j in 0 until 3) {
+                    val weekStartMs = startOfWeek - (3 - j) * 7 * 86400000L
+                    if (weekStartMs + 7 * 86400000L < joinDateMs) {
+                        points.add(0f)
+                    } else {
+                        points.add(mockWeeks[j])
+                    }
+                }
+                
+                val currentWeekValue = if (joinDateMs >= startOfWeek) {
+                    todayCompleted.toFloat()
+                } else {
+                    12f + todayCompleted.toFloat()
+                }
+                points.add(currentWeekValue)
+                points
+            }
+            AnalysisPeriod.MONTH -> {
+                val cal = Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                
+                val mockMonths = listOf(74f, 82f, 90f, 68f, 85f)
+                val points = mutableListOf<Float>()
+                for (k in 0 until 5) {
+                    val c = cal.clone() as Calendar
+                    c.add(Calendar.MONTH, -(5 - k))
+                    c.add(Calendar.MONTH, 1)
+                    val nextMonthStartMs = c.timeInMillis
+                    
+                    if (nextMonthStartMs < joinDateMs) {
+                        points.add(0f)
+                    } else {
+                        points.add(mockMonths[k])
+                    }
+                }
+                
+                val currentMonthValue = if (joinDateMs >= cal.timeInMillis) {
+                    todayCompleted.toFloat()
+                } else {
+                    55f + todayCompleted.toFloat()
+                }
+                points.add(currentMonthValue)
+                points
+            }
+        }
+    }
+
+    val labels = when (selectedPeriod) {
+        AnalysisPeriod.DAY -> daysLabels
+        AnalysisPeriod.WEEK -> weeksLabels
+        AnalysisPeriod.MONTH -> monthsLabels
+    }
+
+    val maxVal = remember(dataPoints) {
+        (dataPoints.maxOrNull() ?: 10f).coerceAtLeast(6f)
+    }
+
+    RpgCard(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .background(Color(0xFF0F0F0F), RoundedCornerShape(8.dp))
-            .border(1.dp, BorderNavy, RoundedCornerShape(8.dp))
-            .padding(12.dp)
+            .padding(horizontal = 16.dp),
+        glowColor = BorderNavy
     ) {
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White
-        )
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "QUEST ANALYSIS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF888888),
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    val averageText = when (selectedPeriod) {
+                        AnalysisPeriod.DAY -> "${String.format("%.1f", dataPoints.average())} completed / day"
+                        AnalysisPeriod.WEEK -> "${String.format("%.1f", dataPoints.average())} completed / week"
+                        AnalysisPeriod.MONTH -> "${String.format("%.1f", dataPoints.average())} completed / month"
+                    }
+                    Text(
+                        text = averageText,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .background(Color(0xFF0F0F0F), RoundedCornerShape(20.dp))
+                        .border(0.5.dp, BorderNavy, RoundedCornerShape(20.dp))
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    AnalysisPeriod.values().forEach { period ->
+                        val active = selectedPeriod == period
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(if (active) Color(0xFF1F1F1F) else Color.Transparent)
+                                .clickable { selectedPeriod = period }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = when (period) {
+                                    AnalysisPeriod.DAY -> "D"
+                                    AnalysisPeriod.WEEK -> "W"
+                                    AnalysisPeriod.MONTH -> "M"
+                                },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (active) Color.White else Color(0xFF666666),
+                                fontWeight = if (active) FontWeight.Black else FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+            ) {
+                val lineColor = when (selectedPeriod) {
+                    AnalysisPeriod.DAY -> Color(0xFFAB47BC)
+                    AnalysisPeriod.WEEK -> Color(0xFF42A5F5)
+                    AnalysisPeriod.MONTH -> Color(0xFF66BB6A)
+                }
+
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val width = size.width
+                    val height = size.height
+
+                    val gridLines = 4
+                    for (i in 0 until gridLines) {
+                        val y = height * (i.toFloat() / (gridLines - 1))
+                        drawLine(
+                            color = Color(0xFF1E1E1E),
+                            start = Offset(0f, y),
+                            end = Offset(width, y),
+                            strokeWidth = 1f
+                        )
+                    }
+
+                    val xSpacing = width / (dataPoints.size - 1)
+                    val points = dataPoints.mapIndexed { idx, value ->
+                        val x = idx * xSpacing
+                        val y = height - (value / maxVal) * height
+                        Offset(x, y)
+                    }
+
+                    val areaPath = Path().apply {
+                        moveTo(0f, height)
+                        points.forEachIndexed { index, point ->
+                            if (index == 0) {
+                                lineTo(point.x, point.y)
+                            } else {
+                                val prevPoint = points[index - 1]
+                                val control1 = Offset(prevPoint.x + xSpacing / 2f, prevPoint.y)
+                                val control2 = Offset(point.x - xSpacing / 2f, point.y)
+                                cubicTo(control1.x, control1.y, control2.x, control2.y, point.x, point.y)
+                            }
+                        }
+                        lineTo(width, height)
+                        close()
+                    }
+
+                    drawPath(
+                        path = areaPath,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(lineColor.copy(alpha = 0.25f), Color.Transparent),
+                            startY = 0f,
+                            endY = height
+                        )
+                    )
+
+                    val linePath = Path().apply {
+                        points.forEachIndexed { index, point ->
+                            if (index == 0) {
+                                moveTo(point.x, point.y)
+                            } else {
+                                val prevPoint = points[index - 1]
+                                val control1 = Offset(prevPoint.x + xSpacing / 2f, prevPoint.y)
+                                val control2 = Offset(point.x - xSpacing / 2f, point.y)
+                                cubicTo(control1.x, control1.y, control2.x, control2.y, point.x, point.y)
+                            }
+                        }
+                    }
+
+                    drawPath(
+                        path = linePath,
+                        color = lineColor.copy(alpha = 0.3f),
+                        style = Stroke(width = 6f, cap = StrokeCap.Round)
+                    )
+
+                    drawPath(
+                        path = linePath,
+                        color = lineColor,
+                        style = Stroke(width = 2.5f, cap = StrokeCap.Round)
+                    )
+
+                    points.forEachIndexed { index, point ->
+                        val isCurrent = index == points.size - 1
+                        
+                        drawCircle(
+                            color = Color.Black,
+                            radius = 6f,
+                            center = point
+                        )
+
+                        drawCircle(
+                            color = lineColor,
+                            radius = 4f,
+                            center = point
+                        )
+
+                        if (isCurrent) {
+                            drawCircle(
+                                color = lineColor.copy(alpha = 0.35f),
+                                radius = 8f,
+                                style = Stroke(width = 2f),
+                                center = point
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                labels.forEach { label ->
+                    Text(
+                        text = label.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF666666),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 9.sp
+                    )
+                }
+            }
+        }
     }
 }
 

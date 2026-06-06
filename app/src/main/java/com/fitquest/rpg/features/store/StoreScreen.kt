@@ -24,6 +24,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fitquest.rpg.core.domain.model.RewardCard
 import com.fitquest.rpg.ui.theme.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.geometry.Rect
+import com.fitquest.rpg.ui.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +35,18 @@ fun StoreScreen(
     viewModel: StoreViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Onboarding Tutorial States
+    val context = LocalContext.current
+    var showTutorial by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableStateOf(0) }
+    val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
+
+    LaunchedEffect(state.allCards) {
+        if (state.allCards.isNotEmpty()) {
+            showTutorial = !TutorialManager.isTutorialCompleted(context, "store")
+        }
+    }
 
     // Handle messages
     val snackbarHostState = remember { SnackbarHostState() }
@@ -46,26 +61,36 @@ fun StoreScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = viewModel::showAddDialog,
-                containerColor = Color.White,
-                contentColor = Color.Black,
-                shape = RoundedCornerShape(8.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .tutorialAnchor("screen_root", tutorialAnchors)
+    ) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = viewModel::showAddDialog,
+                    containerColor = Color.White,
+                    contentColor = Color.Black,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.tutorialAnchor("reward_fab", tutorialAnchors)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add custom reward")
+                }
+            },
+            containerColor = Color.Black
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add custom reward")
-            }
-        },
-        containerColor = Color.Black
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Color.Black)
-        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
             // Header
             Row(
                 modifier = Modifier
@@ -86,7 +111,10 @@ fun StoreScreen(
                     Text("Spend your earned Action Points", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 // AP Balance
-                Column(horizontalAlignment = Alignment.End) {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.tutorialAnchor("ap_balance", tutorialAnchors)
+                ) {
                     Text("YOUR BALANCE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 2.sp)
                     Text("⚡ ${state.availableAP} AP", style = MaterialTheme.typography.headlineSmall, color = GoldAP, fontWeight = FontWeight.Black)
                 }
@@ -106,7 +134,10 @@ fun StoreScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f).fillMaxWidth()
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .tutorialAnchor("reward_cards", tutorialAnchors)
             ) {
                 if (activeQuests.isNotEmpty()) {
                     item(span = { GridItemSpan(2) }) {
@@ -177,8 +208,40 @@ fun StoreScreen(
                     }
                 }
             }
+            }
         }
     }
+
+    // Onboarding Tutorial Overlay
+    if (showTutorial && tutorialAnchors.isNotEmpty()) {
+        val steps = listOf(
+            TutorialStep("ap_balance", "Action Points (AP)", "Earned AP can be spent in this store to claim rewards, routine milestones, or cheat day buffs."),
+            TutorialStep("reward_fab", "Custom Rewards", "Tap this button to create your own custom rewards, defining what they are and their AP cost."),
+            TutorialStep("reward_cards", "Redeem Shop", "Select and purchase rewards. Redeemed cards are subject to a 2-day cooldown to encourage consistent habits.")
+        )
+        val currentStep = steps.getOrNull(tutorialStep)
+        if (currentStep != null) {
+            TutorialOverlay(
+                step = currentStep,
+                anchorRect = calculateLocalRect(tutorialAnchors[currentStep.anchorKey], tutorialAnchors["screen_root"]),
+                onNext = {
+                    if (tutorialStep < steps.lastIndex) {
+                        tutorialStep++
+                    } else {
+                        showTutorial = false
+                        TutorialManager.setTutorialCompleted(context, "store", true)
+                    }
+                },
+                onSkip = {
+                    showTutorial = false
+                    TutorialManager.setTutorialCompleted(context, "store", true)
+                },
+                currentStepIndex = tutorialStep,
+                totalSteps = steps.size
+            )
+        }
+    }
+}
 
     // Add custom card dialog
     if (state.showAddDialog) {
@@ -204,19 +267,20 @@ private fun RewardCardItem(
 
 
     val borderColor = when {
-        card.isRedeemed && card.taskCompleted -> SuccessGreen.copy(alpha = 0.5f)
+        card.isRedeemed && !isActiveQuest -> SuccessGreen.copy(alpha = 0.5f)
         card.isRedeemed && !card.taskCompleted -> Color.White.copy(alpha = 0.7f)
         canAfford -> GoldAP.copy(alpha = 0.6f)
         else -> BorderNavy
     }
 
     val borderStroke = BorderStroke(1.dp, borderColor)
-    val cardBg = SolidColor(CardNavy)
+    val cardBg = SolidColor(
+        if (card.isRedeemed && !isActiveQuest) SuccessGreen.copy(alpha = 0.15f) else CardNavy
+    )
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .alpha(if (card.isRedeemed && !isActiveQuest) 0.5f else 1f),
+            .fillMaxWidth(),
         border = borderStroke,
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -316,7 +380,6 @@ private fun RewardCardItem(
                         )
                     }
                 } else if (card.isRedeemed) {
-                    Text("✅ REDEEMED", color = SuccessGreen, style = MaterialTheme.typography.labelMedium, letterSpacing = 1.sp)
                     if (card.hasTask && card.taskCompleted) {
                         Text(
                             "Quest Completed!",

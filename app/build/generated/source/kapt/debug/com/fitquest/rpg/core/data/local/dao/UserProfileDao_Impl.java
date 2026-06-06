@@ -86,7 +86,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
 
   @Override
   public Object upsertProfile(final UserProfileEntity profile,
-      final Continuation<? super Unit> arg1) {
+      final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -100,7 +100,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
@@ -197,7 +197,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
   }
 
   @Override
-  public Object getProfile(final Continuation<? super UserProfileEntity> arg0) {
+  public Object getProfile(final Continuation<? super UserProfileEntity> $completion) {
     final String _sql = "SELECT * FROM user_profile WHERE id = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -283,7 +283,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
           _statement.release();
         }
       }
-    }, arg0);
+    }, $completion);
   }
 
   @NonNull

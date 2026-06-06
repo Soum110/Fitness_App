@@ -59,7 +59,8 @@ public final class AttributeDao_Impl implements AttributeDao {
   }
 
   @Override
-  public Object upsert(final AttributeEntity attribute, final Continuation<? super Unit> arg1) {
+  public Object upsert(final AttributeEntity attribute,
+      final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -73,12 +74,12 @@ public final class AttributeDao_Impl implements AttributeDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
   public Object upsertAll(final List<AttributeEntity> attributes,
-      final Continuation<? super Unit> arg1) {
+      final Continuation<? super Unit> $completion) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -92,7 +93,7 @@ public final class AttributeDao_Impl implements AttributeDao {
           __db.endTransaction();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @Override
@@ -141,7 +142,8 @@ public final class AttributeDao_Impl implements AttributeDao {
   }
 
   @Override
-  public Object getAttribute(final String type, final Continuation<? super AttributeEntity> arg1) {
+  public Object getAttribute(final String type,
+      final Continuation<? super AttributeEntity> $completion) {
     final String _sql = "SELECT * FROM attributes WHERE type = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -185,7 +187,7 @@ public final class AttributeDao_Impl implements AttributeDao {
           _statement.release();
         }
       }
-    }, arg1);
+    }, $completion);
   }
 
   @NonNull

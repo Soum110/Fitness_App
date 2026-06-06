@@ -1,7 +1,7 @@
 package com.fitquest.rpg.features.attributes;
 
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import com.fitquest.rpg.core.data.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -26,10 +26,10 @@ import javax.inject.Provider;
 public final class AttributesViewModel_Factory implements Factory<AttributesViewModel> {
   private final Provider<UserRepository> userRepoProvider;
 
-  private final Provider<FirebaseAuth> authProvider;
+  private final Provider<SupabaseAuth> authProvider;
 
   public AttributesViewModel_Factory(Provider<UserRepository> userRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     this.userRepoProvider = userRepoProvider;
     this.authProvider = authProvider;
   }
@@ -40,11 +40,11 @@ public final class AttributesViewModel_Factory implements Factory<AttributesView
   }
 
   public static AttributesViewModel_Factory create(Provider<UserRepository> userRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     return new AttributesViewModel_Factory(userRepoProvider, authProvider);
   }
 
-  public static AttributesViewModel newInstance(UserRepository userRepo, FirebaseAuth auth) {
+  public static AttributesViewModel newInstance(UserRepository userRepo, SupabaseAuth auth) {
     return new AttributesViewModel(userRepo, auth);
   }
 }

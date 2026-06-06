@@ -3,7 +3,7 @@ package com.fitquest.rpg.features.onboarding;
 import androidx.lifecycle.ViewModel;
 import com.fitquest.rpg.core.data.repository.UserRepository;
 import com.fitquest.rpg.core.domain.model.*;
-import com.google.firebase.auth.FirebaseAuth;
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import kotlinx.coroutines.flow.StateFlow;
 import javax.inject.Inject;

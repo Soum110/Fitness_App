@@ -2,31 +2,40 @@ package com.fitquest.rpg.features.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
+import com.fitquest.rpg.core.data.remote.SupabaseUser
+import com.fitquest.rpg.core.data.local.FitQuestDatabase
+import com.fitquest.rpg.core.data.repository.UserRepository
+import com.fitquest.rpg.core.data.repository.TaskRepository
+import com.fitquest.rpg.core.data.repository.RewardCardRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 data class AuthUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val currentUser: FirebaseUser? = null,
+    val currentUser: SupabaseUser? = null,
     val isLoginMode: Boolean = true   // toggle between Login and Register
 )
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: SupabaseAuth,
+    private val userRepo: UserRepository,
+    private val taskRepo: TaskRepository,
+    private val rewardCardRepo: RewardCardRepository,
+    private val db: FitQuestDatabase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState(currentUser = auth.currentUser))
     val uiState: StateFlow<AuthUiState> = _uiState
 
-    val currentUser: FirebaseUser? get() = auth.currentUser
+    val currentUser: SupabaseUser? get() = auth.currentUser
 
     fun toggleMode() {
         _uiState.value = _uiState.value.copy(
@@ -40,7 +49,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             try {
-                auth.signInWithEmailAndPassword(email.trim(), password).await()
+                auth.signInWithEmailAndPassword(email.trim(), password)
                 _uiState.value = _uiState.value.copy(isLoading = false, currentUser = auth.currentUser)
                 onSuccess()
             } catch (e: Exception) {
@@ -57,7 +66,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             try {
-                auth.createUserWithEmailAndPassword(email.trim(), password).await()
+                auth.createUserWithEmailAndPassword(email.trim(), password)
                 _uiState.value = _uiState.value.copy(isLoading = false, currentUser = auth.currentUser)
                 onSuccess()
             } catch (e: Exception) {
@@ -71,8 +80,20 @@ class AuthViewModel @Inject constructor(
 
     fun signOut(onComplete: () -> Unit) {
         auth.signOut()
+        userRepo.stopSync()
+        taskRepo.stopSync()
+        rewardCardRepo.stopSync()
         _uiState.value = AuthUiState(currentUser = null)
-        onComplete()
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    db.clearAllTables()
+                }
+            } catch (e: Exception) {
+                // ignore
+            }
+            onComplete()
+        }
     }
 
     fun clearError() {

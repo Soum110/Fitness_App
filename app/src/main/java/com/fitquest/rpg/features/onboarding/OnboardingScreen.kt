@@ -297,14 +297,14 @@ private fun Step4Schedule(state: OnboardingState, vm: OnboardingViewModel) {
         LabeledSlider(
             label = "Wake up at: ${formatHour(state.wakeTimeHour)}",
             value = state.wakeTimeHour.toFloat(),
-            min = 4f, max = 11f
+            min = 0f, max = 23f
         ) { vm.updateWakeTime(it.toInt()) }
 
         LabeledSlider(
             label = "Bed time: ${formatHour(state.sleepTimeHour)}",
             value = state.sleepTimeHour.toFloat(),
-            min = 19f, max = 26f
-        ) { vm.updateSleepTime(it.toInt().coerceIn(0, 23)) }
+            min = 0f, max = 23f
+        ) { vm.updateSleepTime(it.toInt()) }
 
         // Summary card
         Card(

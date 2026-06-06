@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.*
 import com.fitquest.rpg.core.domain.model.*
-import com.google.firebase.auth.FirebaseAuth
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ data class StoreUiState(
 class StoreViewModel @Inject constructor(
     private val cardRepo: RewardCardRepository,
     private val userRepo: UserRepository,
-    private val auth: FirebaseAuth
+    private val auth: SupabaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StoreUiState())

@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import com.fitquest.rpg.core.domain.model.*
 import com.fitquest.rpg.ui.components.*
 import com.fitquest.rpg.ui.theme.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.geometry.Rect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +35,18 @@ fun AttributesScreen(
     val state by viewModel.uiState.collectAsState()
     val overallRank = state.overallRank ?: Rank.BRONZE_RECRUIT
     val rankColor = Color(overallRank.colorHex)
+
+    // Onboarding Tutorial States
+    val context = LocalContext.current
+    var showTutorial by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableStateOf(0) }
+    val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
+
+    LaunchedEffect(state.attributes) {
+        if (state.attributes.isNotEmpty()) {
+            showTutorial = !TutorialManager.isTutorialCompleted(context, "attributes")
+        }
+    }
 
     // Upgrade rim glow animation state
     var lastLevel by remember { mutableStateOf<Int?>(null) }
@@ -53,13 +67,41 @@ fun AttributesScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(tutorialStep, showTutorial, tutorialAnchors) {
+        if (showTutorial) {
+            val steps = listOf(
+                TutorialStep("tier_emblem", "Rank & Roadmap", "This displays your overall Rank Tier. Tap this emblem to view the complete leveling Roadmap from Bronze Recruit to Arise!"),
+                TutorialStep("global_level", "Global Level", "Your unified level representing your total physical and mental progress. Earn attribute XP to level up."),
+                TutorialStep("attributes_list", "Attribute Details", "Tracks individual attributes like Strength, Intelligence, and Stamina. Each has distinct level-up goals.")
+            )
+            val step = steps.getOrNull(tutorialStep)
+            val anchorRect = tutorialAnchors[step?.anchorKey]
+            val rootRect = tutorialAnchors["screen_root"]
+            if (anchorRect != null && rootRect != null) {
+                val elemY = anchorRect.top
+                val rootY = rootRect.top
+                val currentScroll = scrollState.value
+                val targetScroll = (elemY - rootY + currentScroll - 150).toInt()
+                try {
+                    scrollState.animateScrollTo(targetScroll.coerceIn(0, scrollState.maxValue))
+                } catch (e: Exception) {}
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .tutorialAnchor("screen_root", tutorialAnchors)
+    ) {
         Scaffold(containerColor = Color.Black) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
             ) {
                 // Header
                 Row(
@@ -99,6 +141,7 @@ fun AttributesScreen(
                             .background(CardNavy)
                             .border(1.dp, BorderNavy, RoundedCornerShape(8.dp))
                             .clickable { onNavigateToRoadmap() }
+                            .tutorialAnchor("tier_emblem", tutorialAnchors)
                             .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -135,6 +178,7 @@ fun AttributesScreen(
                             .clip(RoundedCornerShape(8.dp))
                             .background(CardNavy)
                             .border(1.dp, BorderNavy, RoundedCornerShape(8.dp))
+                            .tutorialAnchor("global_level", tutorialAnchors)
                     ) {
                         // Constant filling background container
                         Box(
@@ -188,7 +232,9 @@ fun AttributesScreen(
                     "ATTRIBUTE DETAILS",
                     style = MaterialTheme.typography.labelLarge,
                     letterSpacing = 3.sp,
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .tutorialAnchor("attributes_list", tutorialAnchors)
                 )
                 Spacer(Modifier.height(12.dp))
 
@@ -217,6 +263,36 @@ fun AttributesScreen(
                         shape = RectangleShape
                     )
             )
+        }
+
+        // Onboarding Tutorial Overlay
+        if (showTutorial && tutorialAnchors.isNotEmpty()) {
+            val steps = listOf(
+                TutorialStep("tier_emblem", "Rank & Roadmap", "This displays your overall Rank Tier. Tap this emblem to view the complete leveling Roadmap from Bronze Recruit to Arise!"),
+                TutorialStep("global_level", "Global Level", "Your unified level representing your total physical and mental progress. Earn attribute XP to level up."),
+                TutorialStep("attributes_list", "Attribute Details", "Tracks individual attributes like Strength, Intelligence, and Stamina. Each has distinct level-up goals.")
+            )
+            val currentStep = steps.getOrNull(tutorialStep)
+            if (currentStep != null) {
+                TutorialOverlay(
+                    step = currentStep,
+                    anchorRect = calculateLocalRect(tutorialAnchors[currentStep.anchorKey], tutorialAnchors["screen_root"]),
+                    onNext = {
+                        if (tutorialStep < steps.lastIndex) {
+                            tutorialStep++
+                        } else {
+                            showTutorial = false
+                            TutorialManager.setTutorialCompleted(context, "attributes", true)
+                        }
+                    },
+                    onSkip = {
+                        showTutorial = false
+                        TutorialManager.setTutorialCompleted(context, "attributes", true)
+                    },
+                    currentStepIndex = tutorialStep,
+                    totalSteps = steps.size
+                )
+            }
         }
     }
 }

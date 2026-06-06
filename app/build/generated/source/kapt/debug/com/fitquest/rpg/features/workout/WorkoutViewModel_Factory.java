@@ -1,8 +1,8 @@
 package com.fitquest.rpg.features.workout;
 
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import com.fitquest.rpg.core.data.repository.TaskRepository;
 import com.fitquest.rpg.core.data.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -29,10 +29,10 @@ public final class WorkoutViewModel_Factory implements Factory<WorkoutViewModel>
 
   private final Provider<UserRepository> userRepoProvider;
 
-  private final Provider<FirebaseAuth> authProvider;
+  private final Provider<SupabaseAuth> authProvider;
 
   public WorkoutViewModel_Factory(Provider<TaskRepository> taskRepoProvider,
-      Provider<UserRepository> userRepoProvider, Provider<FirebaseAuth> authProvider) {
+      Provider<UserRepository> userRepoProvider, Provider<SupabaseAuth> authProvider) {
     this.taskRepoProvider = taskRepoProvider;
     this.userRepoProvider = userRepoProvider;
     this.authProvider = authProvider;
@@ -44,12 +44,12 @@ public final class WorkoutViewModel_Factory implements Factory<WorkoutViewModel>
   }
 
   public static WorkoutViewModel_Factory create(Provider<TaskRepository> taskRepoProvider,
-      Provider<UserRepository> userRepoProvider, Provider<FirebaseAuth> authProvider) {
+      Provider<UserRepository> userRepoProvider, Provider<SupabaseAuth> authProvider) {
     return new WorkoutViewModel_Factory(taskRepoProvider, userRepoProvider, authProvider);
   }
 
   public static WorkoutViewModel newInstance(TaskRepository taskRepo, UserRepository userRepo,
-      FirebaseAuth auth) {
+      SupabaseAuth auth) {
     return new WorkoutViewModel(taskRepo, userRepo, auth);
   }
 }

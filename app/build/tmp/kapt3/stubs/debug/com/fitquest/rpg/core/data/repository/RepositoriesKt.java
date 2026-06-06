@@ -3,7 +3,7 @@ package com.fitquest.rpg.core.data.repository;
 import android.content.Context;
 import com.fitquest.rpg.core.data.local.dao.*;
 import com.fitquest.rpg.core.data.local.entity.*;
-import com.fitquest.rpg.core.data.remote.FirestoreRepository;
+import com.fitquest.rpg.core.data.remote.SupabaseRepository;
 import com.fitquest.rpg.core.data.remote.WgerApiService;
 import com.fitquest.rpg.core.domain.model.*;
 import com.google.gson.Gson;

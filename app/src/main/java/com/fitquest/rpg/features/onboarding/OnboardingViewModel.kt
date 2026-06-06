@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.UserRepository
 import com.fitquest.rpg.core.domain.model.*
-import com.google.firebase.auth.FirebaseAuth
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +32,7 @@ data class OnboardingState(
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val userRepo: UserRepository,
-    private val auth: FirebaseAuth
+    private val auth: SupabaseAuth
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OnboardingState())

@@ -17,7 +17,7 @@ import com.fitquest.rpg.core.data.repository.UserRepository;
 import com.fitquest.rpg.core.domain.model.*;
 import com.fitquest.rpg.ui.components.*;
 import com.fitquest.rpg.ui.theme.*;
-import com.google.firebase.auth.FirebaseAuth;
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import kotlinx.coroutines.flow.*;
 import javax.inject.Inject;

@@ -1,6 +1,6 @@
 package com.fitquest.rpg;
 
-import com.google.firebase.auth.FirebaseAuth;
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import dagger.MembersInjector;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.InjectedFieldSignature;
@@ -22,23 +22,23 @@ import javax.inject.Provider;
     "cast"
 })
 public final class MainActivity_MembersInjector implements MembersInjector<MainActivity> {
-  private final Provider<FirebaseAuth> firebaseAuthProvider;
+  private final Provider<SupabaseAuth> supabaseAuthProvider;
 
-  public MainActivity_MembersInjector(Provider<FirebaseAuth> firebaseAuthProvider) {
-    this.firebaseAuthProvider = firebaseAuthProvider;
+  public MainActivity_MembersInjector(Provider<SupabaseAuth> supabaseAuthProvider) {
+    this.supabaseAuthProvider = supabaseAuthProvider;
   }
 
-  public static MembersInjector<MainActivity> create(Provider<FirebaseAuth> firebaseAuthProvider) {
-    return new MainActivity_MembersInjector(firebaseAuthProvider);
+  public static MembersInjector<MainActivity> create(Provider<SupabaseAuth> supabaseAuthProvider) {
+    return new MainActivity_MembersInjector(supabaseAuthProvider);
   }
 
   @Override
   public void injectMembers(MainActivity instance) {
-    injectFirebaseAuth(instance, firebaseAuthProvider.get());
+    injectSupabaseAuth(instance, supabaseAuthProvider.get());
   }
 
-  @InjectedFieldSignature("com.fitquest.rpg.MainActivity.firebaseAuth")
-  public static void injectFirebaseAuth(MainActivity instance, FirebaseAuth firebaseAuth) {
-    instance.firebaseAuth = firebaseAuth;
+  @InjectedFieldSignature("com.fitquest.rpg.MainActivity.supabaseAuth")
+  public static void injectSupabaseAuth(MainActivity instance, SupabaseAuth supabaseAuth) {
+    instance.supabaseAuth = supabaseAuth;
   }
 }

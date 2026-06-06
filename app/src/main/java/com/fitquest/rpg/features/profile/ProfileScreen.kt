@@ -22,11 +22,11 @@ import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.UserRepository
 import com.fitquest.rpg.core.data.repository.TaskRepository
 import com.fitquest.rpg.core.data.repository.RewardCardRepository
-import com.fitquest.rpg.core.data.remote.FirestoreRepository
+import com.fitquest.rpg.core.data.remote.SupabaseRepository
 import com.fitquest.rpg.core.data.local.FitQuestDatabase
 import com.fitquest.rpg.core.domain.model.*
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -37,9 +37,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.geometry.Rect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 // ─── ViewModel ──────────────────────────────────────────────────────────────
 
@@ -55,9 +55,9 @@ class ProfileViewModel @Inject constructor(
     private val userRepo: UserRepository,
     private val taskRepo: TaskRepository,
     private val rewardCardRepo: RewardCardRepository,
-    private val firestoreRepo: FirestoreRepository,
+    private val supabaseRepo: SupabaseRepository,
     private val db: FitQuestDatabase,
-    private val auth: FirebaseAuth
+    private val auth: SupabaseAuth
 ) : ViewModel() {
 
     val uiState: StateFlow<ProfileUiState> = run {
@@ -77,37 +77,43 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun deleteAccount(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun deleteAccount(password: String, onSuccess: (String?) -> Unit, onFailure: (String) -> Unit) {
         val user = auth.currentUser
         val uid = user?.uid
-        if (uid == null) {
+        val email = user?.email
+        if (uid == null || email == null) {
             onFailure("No user is currently signed in.")
+            return
+        }
+        if (password.isBlank()) {
+            onFailure("Please enter your password to confirm.")
             return
         }
 
         viewModelScope.launch {
             try {
-                // 1. Stop all active sync jobs
+                // 1. Re-authenticate user
+                auth.reauthenticate(password)
+
+                // 2. Stop all active sync jobs
                 userRepo.stopSync()
                 taskRepo.stopSync()
                 rewardCardRepo.stopSync()
 
-                // 2. Delete remote data in Firestore (while auth token is still valid)
-                firestoreRepo.deleteUserData(uid)
+                // 3. Delete remote data in Supabase (while auth token is still valid)
+                supabaseRepo.deleteUserData(uid)
 
-                // 3. Clear local cache
+                // 4. Clear local cache
                 withContext(Dispatchers.IO) {
                     db.clearAllTables()
                 }
 
-                // 4. Delete Firebase Authentication user
-                user.delete().await()
+                // 5. Sign out since database data was successfully deleted
+                auth.signOut()
 
-                onSuccess()
-            } catch (e: FirebaseAuthRecentLoginRequiredException) {
-                onFailure("For security reasons, this operation requires recent authentication. Please log out, sign back in, and try again.")
+                onSuccess(null)
             } catch (e: Exception) {
-                onFailure(e.localizedMessage ?: "Failed to delete account.")
+                onFailure(e.localizedMessage ?: "Failed to delete registry.")
             }
         }
     }
@@ -123,7 +129,19 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
+
+    // Onboarding Tutorial States
+    var showTutorial by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableStateOf(0) }
+    val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
+
+    LaunchedEffect(state.profile) {
+        if (state.profile != null) {
+            showTutorial = !TutorialManager.isTutorialCompleted(context, "profile")
+        }
+    }
 
     // Show loading if profile not yet loaded
     if (state.profile == null) {
@@ -174,22 +192,49 @@ fun ProfileScreen(
 
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = { 
+                showDeleteDialog = false
+                confirmPassword = ""
+            },
             containerColor = CardNavy,
             shape = RoundedCornerShape(8.dp),
             title = { Text("Delete Registry & Start Over?", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
             text = {
-                Text(
-                    "This action is permanent and cannot be undone. All your levels, daily quests, action points, and store history will be permanently deleted from the database. You will be signed out and can sign up again with a new sheet.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "This action is permanent and cannot be undone. All your levels, daily quests, action points, and store history will be permanently deleted from the database. You will be signed out and can sign up again with a new sheet.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = { Text("Confirm Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = BorderNavy,
+                            focusedLabelColor = Color.White,
+                            cursorColor = Color.White
+                        )
+                    )
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
+                        val pwd = confirmPassword
                         showDeleteDialog = false
+                        confirmPassword = ""
                         viewModel.deleteAccount(
-                            onSuccess = {
+                            password = pwd,
+                            onSuccess = { message ->
+                                if (message != null) {
+                                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(context, "Registry wiped and account deleted successfully.", Toast.LENGTH_LONG).show()
+                                }
                                 onLogout()
                             },
                             onFailure = { error ->
@@ -205,7 +250,10 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showDeleteDialog = false },
+                    onClick = { 
+                        showDeleteDialog = false
+                        confirmPassword = ""
+                    },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                 ) {
                     Text("Cancel")
@@ -214,19 +262,48 @@ fun ProfileScreen(
         )
     }
 
-    Column(
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(tutorialStep, showTutorial, tutorialAnchors) {
+        if (showTutorial) {
+            val steps = listOf(
+                TutorialStep("profile_hud", "Character Overview", "Displays your level, XP progression, and current rank. Competing quests increases this progress bar."),
+                TutorialStep("physique_grid", "Physique Attributes", "Your physical stats, including height, weight, target, and BMI. Essential metrics calculated for your quests."),
+                TutorialStep("delete_registry", "Registry Wipe", "Delete your profile registry from the database to start completely fresh with new goals, etc.")
+            )
+            val step = steps.getOrNull(tutorialStep)
+            val anchorRect = tutorialAnchors[step?.anchorKey]
+            val rootRect = tutorialAnchors["screen_root"]
+            if (anchorRect != null && rootRect != null) {
+                val elemY = anchorRect.top
+                val rootY = rootRect.top
+                val currentScroll = scrollState.value
+                val targetScroll = (elemY - rootY + currentScroll - 150).toInt()
+                try {
+                    scrollState.animateScrollTo(targetScroll.coerceIn(0, scrollState.maxValue))
+                } catch (e: Exception) {}
+            }
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
-            .verticalScroll(rememberScrollState())
+            .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
-        // Hero section
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 24.dp)
+                .fillMaxSize()
+                .background(Color.Black)
+                .verticalScroll(scrollState)
         ) {
-            // Logout button top-right
+            // Hero section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 24.dp)
+            ) {
+                // Logout button top-right
             IconButton(
                 onClick = { showLogoutDialog = true },
                 modifier = Modifier.align(Alignment.TopEnd)
@@ -283,7 +360,8 @@ fun ProfileScreen(
                         .height(48.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(CardNavy)
-                        .border(1.dp, BorderNavy, RoundedCornerShape(8.dp)),
+                        .border(1.dp, BorderNavy, RoundedCornerShape(8.dp))
+                        .tutorialAnchor("profile_hud", tutorialAnchors),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     // Fill background
@@ -399,7 +477,10 @@ fun ProfileScreen(
             }
 
             // 1. PHYSIQUE ATTRIBUTES (2x2 Grid)
-            RpgCard(glowColor = BorderNavy) {
+            RpgCard(
+                glowColor = BorderNavy,
+                modifier = Modifier.tutorialAnchor("physique_grid", tutorialAnchors)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -512,6 +593,29 @@ fun ProfileScreen(
 
         Spacer(Modifier.height(16.dp))
 
+        // Replay Tutorials button
+        OutlinedButton(
+            onClick = {
+                TutorialManager.resetAllTutorials(context)
+                Toast.makeText(context, "Tutorials have been reset. Reload pages to view guides.", Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+            border = BorderStroke(1.dp, NeonGold.copy(alpha = 0.4f)),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonGold)
+        ) {
+            Icon(
+                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_tips),
+                contentDescription = null,
+                tint = NeonGold,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text("Replay Onboarding Tutorials", color = NeonGold, fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(Modifier.height(12.dp))
+
         // Sign out button
         OutlinedButton(
             onClick = { showLogoutDialog = true },
@@ -529,7 +633,10 @@ fun ProfileScreen(
         // Delete Account button
         OutlinedButton(
             onClick = { showDeleteDialog = true },
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .tutorialAnchor("delete_registry", tutorialAnchors),
             border = BorderStroke(1.dp, Color(0xFFE53935).copy(alpha = 0.4f)),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -539,6 +646,37 @@ fun ProfileScreen(
         }
 
         Spacer(Modifier.height(80.dp))
+        }
+
+        // Onboarding Tutorial Overlay
+        if (showTutorial && tutorialAnchors.isNotEmpty()) {
+            val steps = listOf(
+                TutorialStep("profile_hud", "Character Overview", "Displays your level, XP progression, and current rank. Competing quests increases this progress bar."),
+                TutorialStep("physique_grid", "Physique Attributes", "Your physical stats, including height, weight, target, and BMI. Essential metrics calculated for your quests."),
+                TutorialStep("delete_registry", "Registry Wipe", "Delete your profile registry from the database to start completely fresh with new goals, etc.")
+            )
+            val currentStep = steps.getOrNull(tutorialStep)
+            if (currentStep != null) {
+                TutorialOverlay(
+                    step = currentStep,
+                    anchorRect = calculateLocalRect(tutorialAnchors[currentStep.anchorKey], tutorialAnchors["screen_root"]),
+                    onNext = {
+                        if (tutorialStep < steps.lastIndex) {
+                            tutorialStep++
+                        } else {
+                            showTutorial = false
+                            TutorialManager.setTutorialCompleted(context, "profile", true)
+                        }
+                    },
+                    onSkip = {
+                        showTutorial = false
+                        TutorialManager.setTutorialCompleted(context, "profile", true)
+                    },
+                    currentStepIndex = tutorialStep,
+                    totalSteps = steps.size
+                )
+            }
+        }
     }
 }
 

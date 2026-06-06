@@ -32,7 +32,7 @@ import com.fitquest.rpg.features.profile.ProfileScreen
 import com.fitquest.rpg.features.store.StoreScreen
 import com.fitquest.rpg.features.roadmap.RoadmapScreen
 import com.fitquest.rpg.ui.theme.*
-import com.google.firebase.auth.FirebaseAuth
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -52,26 +52,26 @@ data class BottomNavItem(val screen: Screen, val icon: ImageVector, val label: S
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject lateinit var firebaseAuth: FirebaseAuth
+    @Inject lateinit var supabaseAuth: SupabaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             FitQuestTheme {
-                FitQuestNavigation(firebaseAuth)
+                FitQuestNavigation(supabaseAuth)
             }
         }
     }
 }
 
 @Composable
-fun FitQuestNavigation(firebaseAuth: FirebaseAuth) {
+fun FitQuestNavigation(supabaseAuth: SupabaseAuth) {
     val navController = rememberNavController()
 
     // Determine start destination based on auth state
     val startDestination = remember {
-        val user = firebaseAuth.currentUser
+        val user = supabaseAuth.currentUser
         when {
             user == null -> Screen.Auth.route        // Not logged in → Auth
             else -> Screen.Dashboard.route           // Logged in → Dashboard (onboarding check happens inside)
@@ -193,6 +193,11 @@ fun FitQuestNavigation(firebaseAuth: FirebaseAuth) {
                             }
                             launchSingleTop = true
                             restoreState = true
+                        }
+                    },
+                    onNavigateToOnboarding = {
+                        navController.navigate(Screen.Onboarding.route) {
+                            popUpTo(Screen.Dashboard.route) { inclusive = true }
                         }
                     }
                 )

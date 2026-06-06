@@ -12,7 +12,7 @@ import androidx.navigation.compose.*;
 import com.fitquest.rpg.features.auth.AuthViewModel;
 import com.fitquest.rpg.features.onboarding.OnboardingViewModel;
 import com.fitquest.rpg.ui.theme.*;
-import com.google.firebase.auth.FirebaseAuth;
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import dagger.hilt.android.AndroidEntryPoint;
 import javax.inject.Inject;
 

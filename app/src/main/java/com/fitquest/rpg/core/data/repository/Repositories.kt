@@ -3,7 +3,7 @@ package com.fitquest.rpg.core.data.repository
 import android.content.Context
 import com.fitquest.rpg.core.data.local.dao.*
 import com.fitquest.rpg.core.data.local.entity.*
-import com.fitquest.rpg.core.data.remote.FirestoreRepository
+import com.fitquest.rpg.core.data.remote.SupabaseRepository
 import com.fitquest.rpg.core.data.remote.WgerApiService
 import com.fitquest.rpg.core.domain.model.*
 import com.google.gson.Gson
@@ -20,7 +20,7 @@ class UserRepository @Inject constructor(
     private val profileDao: UserProfileDao,
     private val attributeDao: AttributeDao,
     private val economyDao: EconomyDao,
-    private val firestoreRepo: FirestoreRepository,
+    private val supabaseRepo: SupabaseRepository,
     @ApplicationContext private val context: Context
 ) {
     private val syncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -40,9 +40,7 @@ class UserRepository @Inject constructor(
                             if (existingAttrs.isEmpty()) {
                                 val defaults = AttributeType.values().map { AttributeEntity(type = it.name) }
                                 attributeDao.upsertAll(defaults)
-                                defaults.forEach {
-                                    try { firestoreRepo.saveAttribute(uid, it.toDomain()) } catch (e: Exception) {}
-                                }
+                                try { supabaseRepo.saveAttributes(uid, defaults.map { it.toDomain() }) } catch (e: Exception) {}
                             }
                         } catch (e: Exception) {}
                     }
@@ -52,13 +50,13 @@ class UserRepository @Inject constructor(
                             if (economyDao.getEconomy() == null) {
                                 val defaultEco = EconomyEntity()
                                 economyDao.upsert(defaultEco)
-                                try { firestoreRepo.saveEconomy(uid, Economy()) } catch (e: Exception) {}
+                                try { supabaseRepo.saveEconomy(uid, Economy()) } catch (e: Exception) {}
                             }
                         } catch (e: Exception) {}
                     }
                     // Sync profile
                     launch {
-                        firestoreRepo.observeProfile(uid).collectLatest { remote ->
+                        supabaseRepo.observeProfile(uid).collectLatest { remote ->
                             if (remote != null) {
                                 profileDao.upsertProfile(remote.toEntity())
                             }
@@ -66,7 +64,7 @@ class UserRepository @Inject constructor(
                     }
                     // Sync attributes
                     launch {
-                        firestoreRepo.observeAttributes(uid).collectLatest { remote ->
+                        supabaseRepo.observeAttributes(uid).collectLatest { remote ->
                             if (remote.isNotEmpty()) {
                                 attributeDao.upsertAll(remote.map { it.toEntity() })
                             }
@@ -74,7 +72,7 @@ class UserRepository @Inject constructor(
                     }
                     // Sync economy
                     launch {
-                        firestoreRepo.observeEconomy(uid).collectLatest { remote ->
+                        supabaseRepo.observeEconomy(uid).collectLatest { remote ->
                             if (remote != null) {
                                 economyDao.upsert(remote.toEntity())
                             }
@@ -95,7 +93,7 @@ class UserRepository @Inject constructor(
 
     /** One-shot read — check Firestore first, then Room cache. */
     suspend fun getProfile(uid: String): UserProfile? =
-        firestoreRepo.getProfile(uid) ?: profileDao.getProfile()?.toDomain()
+        supabaseRepo.getProfile(uid) ?: profileDao.getProfile()?.toDomain()
 
     suspend fun saveProfile(uid: String, profile: UserProfile) {
         // Save to local Room cache
@@ -103,24 +101,23 @@ class UserRepository @Inject constructor(
         
         // Save to Firestore in background
         syncScope.launch {
-            try { firestoreRepo.saveProfile(uid, profile) } catch (e: Exception) {}
+            try { supabaseRepo.saveProfile(uid, profile) } catch (e: Exception) {}
         }
 
         // Initialize attributes if first time
         if (attributeDao.getAttribute(AttributeType.STRENGTH.name) == null) {
-            attributeDao.upsertAll(AttributeType.values().map { AttributeEntity(type = it.name) })
-            // Push default attributes to Firestore
-            AttributeType.values().forEach { type ->
-                syncScope.launch {
-                    try { firestoreRepo.saveAttribute(uid, Attribute(type = type)) } catch (e: Exception) {}
-                }
+            val defaults = AttributeType.values().map { AttributeEntity(type = it.name) }
+            attributeDao.upsertAll(defaults)
+            // Push default attributes to Supabase
+            syncScope.launch {
+                try { supabaseRepo.saveAttributes(uid, defaults.map { it.toDomain() }) } catch (e: Exception) {}
             }
         }
         // Initialize economy
         if (economyDao.getEconomy() == null) {
             economyDao.upsert(EconomyEntity())
             syncScope.launch {
-                try { firestoreRepo.saveEconomy(uid, Economy()) } catch (e: Exception) {}
+                try { supabaseRepo.saveEconomy(uid, Economy()) } catch (e: Exception) {}
             }
         }
     }
@@ -154,7 +151,7 @@ class UserRepository @Inject constructor(
         
         // Sync to Firestore
         syncScope.launch {
-            try { firestoreRepo.saveAttribute(uid, updated.toDomain()) } catch (e: Exception) {}
+            try { supabaseRepo.saveAttribute(uid, updated.toDomain()) } catch (e: Exception) {}
         }
     }
 
@@ -173,7 +170,7 @@ class UserRepository @Inject constructor(
         )
         economyDao.upsert(updated.toEntity())
         syncScope.launch {
-            try { firestoreRepo.saveEconomy(uid, updated) } catch (e: Exception) {}
+            try { supabaseRepo.saveEconomy(uid, updated) } catch (e: Exception) {}
         }
     }
 
@@ -186,7 +183,7 @@ class UserRepository @Inject constructor(
         )
         economyDao.upsert(updated.toEntity())
         syncScope.launch {
-            try { firestoreRepo.saveEconomy(uid, updated) } catch (e: Exception) {}
+            try { supabaseRepo.saveEconomy(uid, updated) } catch (e: Exception) {}
         }
         return true
     }
@@ -212,7 +209,7 @@ class UserRepository @Inject constructor(
         )
         economyDao.upsert(updated.toEntity())
         syncScope.launch {
-            try { firestoreRepo.saveEconomy(uid, updated) } catch (e: Exception) {}
+            try { supabaseRepo.saveEconomy(uid, updated) } catch (e: Exception) {}
         }
     }
 }
@@ -231,7 +228,7 @@ private fun Economy.toEntity() = EconomyEntity(
 class TaskRepository @Inject constructor(
     private val taskDao: DailyTaskDao,
     private val attributeDao: AttributeDao,
-    private val firestoreRepo: FirestoreRepository,
+    private val supabaseRepo: SupabaseRepository,
     private val wgerApi: WgerApiService,
     @ApplicationContext private val context: Context
 ) {
@@ -256,7 +253,7 @@ class TaskRepository @Inject constructor(
                 lastSyncedUid = uid
                 tasksSyncJob = syncScope.launch {
                     try {
-                        firestoreRepo.observeTodaysTasks(uid).collectLatest { remoteTasks ->
+                        supabaseRepo.observeTodaysTasks(uid).collectLatest { remoteTasks ->
                             val (todayStart, todayEnd) = getTodayRange()
                             taskDao.replaceTasksForDay(todayStart, todayEnd, remoteTasks.map { it.toEntity() })
                         }
@@ -284,7 +281,7 @@ class TaskRepository @Inject constructor(
             try {
                 val (start, end) = getTodayRange()
                 val allTasks = taskDao.observeTasksForDay(start, end).first().map { it.toDomain() }
-                firestoreRepo.saveTasks(uid, allTasks)
+                supabaseRepo.saveTasks(uid, allTasks)
             } catch (e: Exception) {}
         }
         return updated.toDomain()
@@ -420,7 +417,7 @@ class TaskRepository @Inject constructor(
 
         // Save to Firestore in background
         syncScope.launch {
-            try { firestoreRepo.saveTasks(uid, tasks) } catch (e: Exception) {}
+            try { supabaseRepo.saveTasks(uid, tasks) } catch (e: Exception) {}
         }
     }
 
@@ -479,7 +476,7 @@ fun loadBundledExercises(context: Context): List<ExerciseData> {
 @Singleton
 class RewardCardRepository @Inject constructor(
     private val cardDao: RewardCardDao,
-    private val firestoreRepo: FirestoreRepository,
+    private val supabaseRepo: SupabaseRepository,
     @ApplicationContext private val context: Context
 ) {
     private val syncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -493,7 +490,7 @@ class RewardCardRepository @Inject constructor(
                 lastSyncedUid = uid
                 cardsSyncJob = syncScope.launch {
                     try {
-                        firestoreRepo.observeRewardCards(uid).collectLatest { remoteCards ->
+                        supabaseRepo.observeRewardCards(uid).collectLatest { remoteCards ->
                             cardDao.insertAll(remoteCards.map { it.toEntity() })
                         }
                     } catch (e: Exception) {
@@ -528,7 +525,7 @@ class RewardCardRepository @Inject constructor(
         )
         cardDao.insertAll(predefined.map { it.toEntity() })
         syncScope.launch {
-            try { firestoreRepo.saveRewardCards(uid, predefined) } catch (e: Exception) {}
+            try { supabaseRepo.saveRewardCards(uid, predefined) } catch (e: Exception) {}
         }
     }
 
@@ -536,7 +533,7 @@ class RewardCardRepository @Inject constructor(
         val withId = card.copy(id = System.currentTimeMillis())
         cardDao.insert(withId.toEntity())
         syncScope.launch {
-            try { firestoreRepo.saveRewardCards(uid, listOf(withId)) } catch (e: Exception) {}
+            try { supabaseRepo.saveRewardCards(uid, listOf(withId)) } catch (e: Exception) {}
         }
         return withId
     }
@@ -560,7 +557,7 @@ class RewardCardRepository @Inject constructor(
 
         syncScope.launch {
             try {
-                firestoreRepo.saveRewardCards(uid, listOf(updatedTemplate, redeemedInstance))
+                supabaseRepo.saveRewardCards(uid, listOf(updatedTemplate, redeemedInstance))
             } catch (e: Exception) {}
         }
     }
@@ -569,7 +566,7 @@ class RewardCardRepository @Inject constructor(
         if (card.isPredefined) return
         cardDao.delete(card.toEntity())
         syncScope.launch {
-            try { firestoreRepo.deleteCard(uid, card) } catch (e: Exception) { /* best effort */ }
+            try { supabaseRepo.deleteCard(uid, card) } catch (e: Exception) { /* best effort */ }
         }
     }
 
@@ -596,7 +593,7 @@ class RewardCardRepository @Inject constructor(
 
         cardDao.update(updated.toEntity())
         syncScope.launch {
-            try { firestoreRepo.saveRewardCards(uid, listOf(updated)) } catch (e: Exception) {}
+            try { supabaseRepo.saveRewardCards(uid, listOf(updated)) } catch (e: Exception) {}
         }
 
         if (xpToAward > 0) {
@@ -617,7 +614,7 @@ class RewardCardRepository @Inject constructor(
 
         cardDao.update(updated.toEntity())
         syncScope.launch {
-            try { firestoreRepo.saveRewardCards(uid, listOf(updated)) } catch (e: Exception) {}
+            try { supabaseRepo.saveRewardCards(uid, listOf(updated)) } catch (e: Exception) {}
         }
 
         userRepo.addXpToAttribute(uid, card.targetAttribute, card.bonusXp)

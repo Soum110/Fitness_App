@@ -4,8 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,14 +20,15 @@ import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.TaskRepository
 import com.fitquest.rpg.core.data.repository.UserRepository
 import com.fitquest.rpg.core.domain.model.*
-import com.fitquest.rpg.ui.components.RpgCard
-import com.fitquest.rpg.ui.components.TaskItem
+import com.fitquest.rpg.ui.components.*
 import com.fitquest.rpg.ui.theme.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.geometry.Rect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
-import com.google.firebase.auth.FirebaseAuth
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
 
 // ─── ViewModel ──────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ data class WorkoutUiState(
 class WorkoutViewModel @Inject constructor(
     private val taskRepo: TaskRepository,
     private val userRepo: UserRepository,
-    private val auth: FirebaseAuth
+    private val auth: SupabaseAuth
 ) : ViewModel() {
 
     val uiState: StateFlow<WorkoutUiState> = run {
@@ -81,16 +81,49 @@ fun WorkoutScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(
+    // Onboarding Tutorial States
+    val context = LocalContext.current
+    var showTutorial by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableStateOf(0) }
+    val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(tutorialStep, showTutorial, state.workoutTasks) {
+        if (showTutorial) {
+            val targetIndex = when (tutorialStep) {
+                0 -> 0 // workout_list (top of list)
+                1 -> 0 // week_phase (top of list)
+                2 -> state.workoutTasks.size // rest_timer (bottom of list)
+                else -> 0
+            }
+            try {
+                lazyListState.animateScrollToItem(targetIndex)
+            } catch (e: Exception) {}
+        }
+    }
+
+    LaunchedEffect(state.workoutTasks, state.isLoading) {
+        if (!state.isLoading) {
+            showTutorial = !TutorialManager.isTutorialCompleted(context, "workout")
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
         // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 16.dp)
+                .tutorialAnchor("workout_list", tutorialAnchors)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -118,7 +151,9 @@ fun WorkoutScreen(
 
         // Overload cycle legend
         RpgCard(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .tutorialAnchor("week_phase", tutorialAnchors),
             glowColor = StrengthRed
         ) {
             Row(
@@ -147,6 +182,7 @@ fun WorkoutScreen(
             }
         } else {
             LazyColumn(
+                state = lazyListState,
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -157,7 +193,10 @@ fun WorkoutScreen(
 
                 item {
                     // Rest timer info card
-                    RpgCard(glowColor = Color(0xFF42A5F5)) {
+                    RpgCard(
+                        glowColor = Color(0xFF42A5F5),
+                        modifier = Modifier.tutorialAnchor("rest_timer", tutorialAnchors)
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -184,6 +223,37 @@ fun WorkoutScreen(
                     }
                     Spacer(Modifier.height(80.dp))
                 }
+            }
+        }
+        }
+
+        // Onboarding Tutorial Overlay
+        if (showTutorial && tutorialAnchors.isNotEmpty()) {
+            val steps = listOf(
+                TutorialStep("workout_list", "Workout Quests", "These are your customized training exercises for today. Click a card to complete it and gain Strength or Stamina XP!"),
+                TutorialStep("week_phase", "Overload Cycle", "FitQuest monitors progressive overload. Follow the active weekly phase: Base, +Reps, +Sets, or Deload."),
+                TutorialStep("rest_timer", "Rest Guidelines", "Rest recommendations between sets. Maintain correct pacing to optimize hypertrophy and recovery.")
+            )
+            val currentStep = steps.getOrNull(tutorialStep)
+            if (currentStep != null) {
+                TutorialOverlay(
+                    step = currentStep,
+                    anchorRect = calculateLocalRect(tutorialAnchors[currentStep.anchorKey], tutorialAnchors["screen_root"]),
+                    onNext = {
+                        if (tutorialStep < steps.lastIndex) {
+                            tutorialStep++
+                        } else {
+                            showTutorial = false
+                            TutorialManager.setTutorialCompleted(context, "workout", true)
+                        }
+                    },
+                    onSkip = {
+                        showTutorial = false
+                        TutorialManager.setTutorialCompleted(context, "workout", true)
+                    },
+                    currentStepIndex = tutorialStep,
+                    totalSteps = steps.size
+                )
             }
         }
     }

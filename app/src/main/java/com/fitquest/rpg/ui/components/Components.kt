@@ -435,21 +435,19 @@ fun StreakBadge(streak: Int, modifier: Modifier = Modifier) {
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
         Box(
-            modifier = Modifier.size(width = 18.dp, height = 30.dp),
-            contentAlignment = Alignment.BottomCenter
+            modifier = Modifier.size(18.dp),
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_streak),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(14.dp)
-                    .padding(bottom = 2.dp)
+                modifier = Modifier.size(14.dp)
             )
 
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val centerX = size.width / 2
-                val startY = size.height - 8.dp.toPx() // starts at the flame core base
+                val startY = size.height - 5.dp.toPx() // starts at the flame core base
 
                 particles.forEach { p ->
                     val lifeFraction = p.life / p.maxLife

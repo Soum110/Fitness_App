@@ -20,6 +20,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fitquest.rpg.core.domain.model.TransformationPhase
 import com.fitquest.rpg.ui.theme.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.geometry.Rect
+import com.fitquest.rpg.ui.components.*
 
 @Composable
 fun DietScreen(
@@ -34,15 +37,56 @@ fun DietScreen(
         TransformationPhase.RECOMP -> Color(0xFF42A5F5)
     }
 
+    // Onboarding Tutorial States
+    val context = LocalContext.current
+    var showTutorial by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableStateOf(0) }
+    val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
+
+    LaunchedEffect(state.mealPlan, state.profile) {
+        if (state.profile != null && state.mealPlan.isNotEmpty()) {
+            showTutorial = !TutorialManager.isTutorialCompleted(context, "diet")
+        }
+    }
+
     // Remember checked consumed meals locally for daily tracking
     var consumedMeals by rememberSaveable { mutableStateOf(emptyList<Int>()) }
 
-    Column(
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(tutorialStep, showTutorial, tutorialAnchors) {
+        if (showTutorial) {
+            val steps = listOf(
+                TutorialStep("caloric_hud", "Nutrition & Energy", "This panel details your overall Caloric Target tailored to your active protocol (Bulk, Cut, or Recomp)."),
+                TutorialStep("macros_grid", "Macronutrient Ratios", "Your targets for Protein, Carbohydrates, and Fat. Follow these values to achieve a perfect balance."),
+                TutorialStep("meals_list", "Daily Consumables", "Tick off meals as you consume them during the day. Completing all meals rewards your character with XP!")
+            )
+            val step = steps.getOrNull(tutorialStep)
+            val anchorRect = tutorialAnchors[step?.anchorKey]
+            val rootRect = tutorialAnchors["screen_root"]
+            if (anchorRect != null && rootRect != null) {
+                val elemY = anchorRect.top
+                val rootY = rootRect.top
+                val currentScroll = scrollState.value
+                val targetScroll = (elemY - rootY + currentScroll - 150).toInt()
+                try {
+                    scrollState.animateScrollTo(targetScroll.coerceIn(0, scrollState.maxValue))
+                } catch (e: Exception) {}
+            }
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
-            .verticalScroll(rememberScrollState())
+            .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .verticalScroll(scrollState)
+        ) {
         // Header Block
         Box(
             modifier = Modifier
@@ -113,14 +157,21 @@ fun DietScreen(
             MacroTargetsCard(
                 macros = state.macroTargets,
                 phaseColor = phaseColor,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .tutorialAnchor("caloric_hud", tutorialAnchors),
+                tutorialAnchors = tutorialAnchors
             )
         }
 
         Spacer(Modifier.height(24.dp))
 
         // Daily Consumable Rations Section
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .tutorialAnchor("meals_list", tutorialAnchors)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -200,6 +251,37 @@ fun DietScreen(
         }
 
         Spacer(Modifier.height(96.dp))
+        }
+
+        // Onboarding Tutorial Overlay
+        if (showTutorial && tutorialAnchors.isNotEmpty()) {
+            val steps = listOf(
+                TutorialStep("caloric_hud", "Nutrition & Energy", "This panel details your overall Caloric Target tailored to your active protocol (Bulk, Cut, or Recomp)."),
+                TutorialStep("macros_grid", "Macronutrient Ratios", "Your targets for Protein, Carbohydrates, and Fat. Follow these values to achieve a perfect balance."),
+                TutorialStep("meals_list", "Daily Consumables", "Tick off meals as you consume them during the day. Completing all meals rewards your character with XP!")
+            )
+            val currentStep = steps.getOrNull(tutorialStep)
+            if (currentStep != null) {
+                TutorialOverlay(
+                    step = currentStep,
+                    anchorRect = calculateLocalRect(tutorialAnchors[currentStep.anchorKey], tutorialAnchors["screen_root"]),
+                    onNext = {
+                        if (tutorialStep < steps.lastIndex) {
+                            tutorialStep++
+                        } else {
+                            showTutorial = false
+                            TutorialManager.setTutorialCompleted(context, "diet", true)
+                        }
+                    },
+                    onSkip = {
+                        showTutorial = false
+                        TutorialManager.setTutorialCompleted(context, "diet", true)
+                    },
+                    currentStepIndex = tutorialStep,
+                    totalSteps = steps.size
+                )
+            }
+        }
     }
 }
 
@@ -207,7 +289,8 @@ fun DietScreen(
 private fun MacroTargetsCard(
     macros: MacroTargets,
     phaseColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    tutorialAnchors: MutableMap<String, Rect>
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -260,7 +343,9 @@ private fun MacroTargetsCard(
 
             // Three Macro Columns
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tutorialAnchor("macros_grid", tutorialAnchors),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val pKcal = macros.proteinG * 4

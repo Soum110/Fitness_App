@@ -1,7 +1,7 @@
 package com.fitquest.rpg.features.onboarding;
 
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import com.fitquest.rpg.core.data.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -26,10 +26,10 @@ import javax.inject.Provider;
 public final class OnboardingViewModel_Factory implements Factory<OnboardingViewModel> {
   private final Provider<UserRepository> userRepoProvider;
 
-  private final Provider<FirebaseAuth> authProvider;
+  private final Provider<SupabaseAuth> authProvider;
 
   public OnboardingViewModel_Factory(Provider<UserRepository> userRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     this.userRepoProvider = userRepoProvider;
     this.authProvider = authProvider;
   }
@@ -40,11 +40,11 @@ public final class OnboardingViewModel_Factory implements Factory<OnboardingView
   }
 
   public static OnboardingViewModel_Factory create(Provider<UserRepository> userRepoProvider,
-      Provider<FirebaseAuth> authProvider) {
+      Provider<SupabaseAuth> authProvider) {
     return new OnboardingViewModel_Factory(userRepoProvider, authProvider);
   }
 
-  public static OnboardingViewModel newInstance(UserRepository userRepo, FirebaseAuth auth) {
+  public static OnboardingViewModel newInstance(UserRepository userRepo, SupabaseAuth auth) {
     return new OnboardingViewModel(userRepo, auth);
   }
 }

@@ -20,8 +20,8 @@ import dagger.hilt.processor.internal.definecomponent.codegen._dagger_hilt_compo
 import hilt_aggregated_deps._com_fitquest_rpg_FitQuestApp_GeneratedInjector;
 import hilt_aggregated_deps._com_fitquest_rpg_MainActivity_GeneratedInjector;
 import hilt_aggregated_deps._com_fitquest_rpg_core_di_DatabaseModule;
-import hilt_aggregated_deps._com_fitquest_rpg_core_di_FirebaseModule;
 import hilt_aggregated_deps._com_fitquest_rpg_core_di_NetworkModule;
+import hilt_aggregated_deps._com_fitquest_rpg_core_di_SupabaseModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_fitquest_rpg_features_auth_AuthViewModel_HiltModules_BindsModule;
@@ -83,8 +83,8 @@ import hilt_aggregated_deps._dagger_hilt_android_internal_modules_HiltWrapper_Ac
         _com_fitquest_rpg_FitQuestApp_GeneratedInjector.class,
         _com_fitquest_rpg_MainActivity_GeneratedInjector.class,
         _com_fitquest_rpg_core_di_DatabaseModule.class,
-        _com_fitquest_rpg_core_di_FirebaseModule.class,
         _com_fitquest_rpg_core_di_NetworkModule.class,
+        _com_fitquest_rpg_core_di_SupabaseModule.class,
         _com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_BindsModule.class,
         _com_fitquest_rpg_features_attributes_AttributesViewModel_HiltModules_KeyModule.class,
         _com_fitquest_rpg_features_auth_AuthViewModel_HiltModules_BindsModule.class,

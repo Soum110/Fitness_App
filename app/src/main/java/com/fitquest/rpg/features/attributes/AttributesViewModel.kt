@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.rpg.core.data.repository.UserRepository
 import com.fitquest.rpg.core.domain.model.*
-import com.google.firebase.auth.FirebaseAuth
+import com.fitquest.rpg.core.data.remote.SupabaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -19,7 +19,7 @@ data class AttributesUiState(
 @HiltViewModel
 class AttributesViewModel @Inject constructor(
     private val userRepo: UserRepository,
-    private val auth: FirebaseAuth
+    private val auth: SupabaseAuth
 ) : ViewModel() {
 
     val uiState: StateFlow<AttributesUiState> = run {

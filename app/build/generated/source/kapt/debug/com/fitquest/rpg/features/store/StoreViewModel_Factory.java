@@ -1,8 +1,8 @@
 package com.fitquest.rpg.features.store;
 
+import com.fitquest.rpg.core.data.remote.SupabaseAuth;
 import com.fitquest.rpg.core.data.repository.RewardCardRepository;
 import com.fitquest.rpg.core.data.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -29,10 +29,10 @@ public final class StoreViewModel_Factory implements Factory<StoreViewModel> {
 
   private final Provider<UserRepository> userRepoProvider;
 
-  private final Provider<FirebaseAuth> authProvider;
+  private final Provider<SupabaseAuth> authProvider;
 
   public StoreViewModel_Factory(Provider<RewardCardRepository> cardRepoProvider,
-      Provider<UserRepository> userRepoProvider, Provider<FirebaseAuth> authProvider) {
+      Provider<UserRepository> userRepoProvider, Provider<SupabaseAuth> authProvider) {
     this.cardRepoProvider = cardRepoProvider;
     this.userRepoProvider = userRepoProvider;
     this.authProvider = authProvider;
@@ -44,12 +44,12 @@ public final class StoreViewModel_Factory implements Factory<StoreViewModel> {
   }
 
   public static StoreViewModel_Factory create(Provider<RewardCardRepository> cardRepoProvider,
-      Provider<UserRepository> userRepoProvider, Provider<FirebaseAuth> authProvider) {
+      Provider<UserRepository> userRepoProvider, Provider<SupabaseAuth> authProvider) {
     return new StoreViewModel_Factory(cardRepoProvider, userRepoProvider, authProvider);
   }
 
   public static StoreViewModel newInstance(RewardCardRepository cardRepo, UserRepository userRepo,
-      FirebaseAuth auth) {
+      SupabaseAuth auth) {
     return new StoreViewModel(cardRepo, userRepo, auth);
   }
 }
