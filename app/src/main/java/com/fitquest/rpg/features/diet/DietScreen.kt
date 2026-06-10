@@ -81,12 +81,32 @@ fun DietScreen(
             .fillMaxSize()
             .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .verticalScroll(scrollState)
-        ) {
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 64.dp, accentColor = SuccessGreen)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "ANALYZING NUTRITIONAL BIOMETRICS...",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        letterSpacing = 2.sp
+                    )
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .verticalScroll(scrollState)
+            ) {
         // Header Block
         Box(
             modifier = Modifier
@@ -251,6 +271,7 @@ fun DietScreen(
         }
 
         Spacer(Modifier.height(96.dp))
+        }
         }
 
         // Onboarding Tutorial Overlay

@@ -48,6 +48,9 @@ interface DailyTaskDao {
     @Query("DELETE FROM daily_tasks WHERE dateMs >= :startOfDay AND dateMs < :endOfDay")
     suspend fun deleteTasksForDay(startOfDay: Long, endOfDay: Long)
 
+    @Query("DELETE FROM daily_tasks WHERE dateMs >= :startOfDay AND dateMs < :endOfDay AND taskType = :type AND isCompleted = 0")
+    suspend fun deleteUncompletedTasksForDayByType(startOfDay: Long, endOfDay: Long, type: String)
+
     @Transaction
     suspend fun replaceTasksForDay(startOfDay: Long, endOfDay: Long, tasks: List<DailyTaskEntity>) {
         deleteTasksForDay(startOfDay, endOfDay)

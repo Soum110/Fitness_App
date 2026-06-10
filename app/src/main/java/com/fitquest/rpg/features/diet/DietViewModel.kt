@@ -14,7 +14,8 @@ data class DietUiState(
     val phase: TransformationPhase = TransformationPhase.RECOMP,
     val mealPlan: List<String> = emptyList(),
     val macroTargets: MacroTargets = MacroTargets(),
-    val tips: List<String> = emptyList()
+    val tips: List<String> = emptyList(),
+    val isLoading: Boolean = true
 )
 
 data class MacroTargets(
@@ -33,10 +34,10 @@ class DietViewModel @Inject constructor(
     val uiState: StateFlow<DietUiState> = run {
         val uid = auth.currentUser?.uid
         if (uid == null) {
-            MutableStateFlow(DietUiState())
+            MutableStateFlow(DietUiState(isLoading = false))
         } else {
             userRepo.observeProfile(uid).map { profile ->
-                if (profile == null) return@map DietUiState()
+                if (profile == null) return@map DietUiState(isLoading = false)
                 val phase = profile.transformationPhase
                 val macros = computeMacros(profile)
                 DietUiState(
@@ -44,9 +45,10 @@ class DietViewModel @Inject constructor(
                     phase = phase,
                     mealPlan = getMealPlan(profile),
                     macroTargets = macros,
-                    tips = getDietTips(profile)
+                    tips = getDietTips(profile),
+                    isLoading = false
                 )
-            }.catch { emit(DietUiState()) }
+            }.catch { emit(DietUiState(isLoading = false)) }
              .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DietUiState())
         }
     }

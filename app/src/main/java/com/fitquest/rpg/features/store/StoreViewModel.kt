@@ -15,7 +15,8 @@ data class StoreUiState(
     val availableAP: Int = 0,
     val redeemSuccess: String? = null,
     val errorMessage: String? = null,
-    val showAddDialog: Boolean = false
+    val showAddDialog: Boolean = false,
+    val isLoading: Boolean = true
 )
 
 @HiltViewModel
@@ -37,10 +38,14 @@ class StoreViewModel @Inject constructor(
                         cardRepo.observeAvailableCards(currentUid),
                         userRepo.observeEconomy(currentUid)
                     ) { cards, economy ->
-                        StoreUiState(allCards = cards, availableAP = economy?.availableActionPoints ?: 0)
+                        StoreUiState(
+                            allCards = cards,
+                            availableAP = economy?.availableActionPoints ?: 0,
+                            isLoading = false
+                        )
                     }.catch { /* non-fatal */ }.collect { _uiState.value = it }
                 } catch (e: Exception) {
-                    _uiState.update { it.copy(errorMessage = "Failed to load store.") }
+                    _uiState.update { it.copy(errorMessage = "Failed to load store.", isLoading = false) }
                 }
             }
         }

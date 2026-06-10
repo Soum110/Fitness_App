@@ -39,7 +39,9 @@ class SupabaseRepository @Inject constructor(
                 wakeTimeHour = profile.wakeTimeHour,
                 sleepTimeHour = profile.sleepTimeHour,
                 onboardingComplete = profile.onboardingComplete,
-                joinDateMs = profile.joinDateMs
+                joinDateMs = profile.joinDateMs,
+                transformationMonths = profile.transformationMonths,
+                workoutLocation = profile.workoutLocation.name
             )
             apiService.upsertProfile(getAuthHeader(), profile = dto)
         }
@@ -69,7 +71,9 @@ class SupabaseRepository @Inject constructor(
                     wakeTimeHour = snap.wakeTimeHour,
                     sleepTimeHour = snap.sleepTimeHour,
                     onboardingComplete = snap.onboardingComplete,
-                    joinDateMs = snap.joinDateMs
+                    joinDateMs = snap.joinDateMs,
+                    transformationMonths = snap.transformationMonths,
+                    workoutLocation = try { WorkoutLocation.valueOf(snap.workoutLocation) } catch (e: Exception) { WorkoutLocation.HOME }
                 )
             } catch (e: Exception) {
                 null
@@ -186,7 +190,8 @@ class SupabaseRepository @Inject constructor(
                     "isCompleted" to t.isCompleted,
                     "completedAtMs" to t.completedAtMs,
                     "dateMs" to t.dateMs,
-                    "difficultyMultiplier" to t.difficultyMultiplier
+                    "difficultyMultiplier" to t.difficultyMultiplier,
+                    "weight" to t.weight
                 )
             }
             val json = gson.toJson(taskMaps)
@@ -225,7 +230,8 @@ class SupabaseRepository @Inject constructor(
                             isCompleted = map["isCompleted"] as? Boolean ?: false,
                             completedAtMs = (map["completedAtMs"] as? Double)?.toLong() ?: (map["completedAtMs"] as? Long),
                             dateMs = (map["dateMs"] as? Double)?.toLong() ?: (map["dateMs"] as? Long) ?: System.currentTimeMillis(),
-                            difficultyMultiplier = ((map["difficultyMultiplier"] as? Double) ?: 1.0).toFloat()
+                            difficultyMultiplier = ((map["difficultyMultiplier"] as? Double) ?: 1.0).toFloat(),
+                            weight = map["weight"] as? String
                         )
                     } catch (e: Exception) {
                         null
@@ -280,14 +286,19 @@ class SupabaseRepository @Inject constructor(
     }
 
     suspend fun deleteUserData(uid: String) {
+        val anonHeader = "Bearer ${auth.apiKey}"
         withContext(Dispatchers.IO) {
-            try { apiService.deleteProfile(getAuthHeader(), "uid.eq.$uid") } catch (e: Exception) {}
-            try { apiService.deleteEconomy(getAuthHeader(), "uid.eq.$uid") } catch (e: Exception) {}
-            try { apiService.deleteAttributes(getAuthHeader(), "uid.eq.$uid") } catch (e: Exception) {}
-            try { apiService.deleteTasks(getAuthHeader(), "uid.eq.$uid") } catch (e: Exception) {}
-            try { apiService.deleteRewardCards(getAuthHeader(), "uid.eq.$uid") } catch (e: Exception) {}
-            // Do not swallow the RPC account deletion error so we can bubble it up to the UI/logs.
-            apiService.deleteUserAccount(getAuthHeader())
+            try { apiService.deleteProfile(anonHeader, "uid.eq.$uid") } catch (e: Exception) {}
+            try { apiService.deleteEconomy(anonHeader, "uid.eq.$uid") } catch (e: Exception) {}
+            try { apiService.deleteAttributes(anonHeader, "uid.eq.$uid") } catch (e: Exception) {}
+            try { apiService.deleteTasks(anonHeader, "uid.eq.$uid") } catch (e: Exception) {}
+            try { apiService.deleteRewardCards(anonHeader, "uid.eq.$uid") } catch (e: Exception) {}
+            // Clear in-game user progress RPC call (does not delete auth account)
+            try {
+                apiService.clearUserProgress(anonHeader, mapOf("user_id" to uid))
+            } catch (e: Exception) {
+                // ignore and allow local reset to proceed
+            }
         }
     }
 }

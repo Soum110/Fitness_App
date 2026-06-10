@@ -13,7 +13,8 @@ data class AttributesUiState(
     val attributes: List<Attribute> = emptyList(),
     val overallRank: Rank? = null,
     val globalLevel: Int = 1,
-    val globalProgressFraction: Float = 0f
+    val globalProgressFraction: Float = 0f,
+    val isLoading: Boolean = true
 )
 
 @HiltViewModel
@@ -25,7 +26,7 @@ class AttributesViewModel @Inject constructor(
     val uiState: StateFlow<AttributesUiState> = run {
         val uid = auth.currentUser?.uid
         if (uid == null) {
-            MutableStateFlow(AttributesUiState())
+            MutableStateFlow(AttributesUiState(isLoading = false))
         } else {
             userRepo.observeAttributes(uid).map { attrs ->
                 val (globalLevel, globalProgressFraction) = if (attrs.isEmpty()) {
@@ -37,9 +38,10 @@ class AttributesViewModel @Inject constructor(
                     attributes = attrs.sortedBy { it.type.ordinal },
                     overallRank = Rank.fromLevel(globalLevel),
                     globalLevel = globalLevel,
-                    globalProgressFraction = globalProgressFraction
+                    globalProgressFraction = globalProgressFraction,
+                    isLoading = false
                 )
-            }.catch { emit(AttributesUiState()) }
+            }.catch { emit(AttributesUiState(isLoading = false)) }
              .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AttributesUiState())
         }
     }

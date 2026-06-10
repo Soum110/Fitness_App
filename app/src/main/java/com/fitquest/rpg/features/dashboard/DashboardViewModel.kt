@@ -82,26 +82,33 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun completeTask(taskId: Long) {
+    fun toggleTask(taskId: Long) {
         val currentUid = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             try {
-                val completedTask = taskRepo.completeTask(currentUid, taskId) ?: return@launch
-                userRepo.addXpToAttribute(currentUid, completedTask.targetAttribute, completedTask.xpReward)
-                userRepo.addActionPoints(currentUid, completedTask.apReward)
-                checkAndAwardStreakBonus(currentUid)
+                val task = taskRepo.getTask(taskId) ?: return@launch
+                if (task.isCompleted) {
+                    val updatedTask = taskRepo.uncompleteTask(currentUid, taskId) ?: return@launch
+                    userRepo.addXpToAttribute(currentUid, updatedTask.targetAttribute, -updatedTask.xpReward)
+                    userRepo.addActionPoints(currentUid, -updatedTask.apReward)
+                } else {
+                    val updatedTask = taskRepo.completeTask(currentUid, taskId) ?: return@launch
+                    userRepo.addXpToAttribute(currentUid, updatedTask.targetAttribute, updatedTask.xpReward)
+                    userRepo.addActionPoints(currentUid, updatedTask.apReward)
+                    checkAndAwardStreakBonus(currentUid)
+                }
             } catch (e: Exception) {
-                _uiState.update { it.copy(errorMessage = "Failed to complete task.") }
+                _uiState.update { it.copy(errorMessage = "Failed to toggle task.") }
             }
         }
     }
 
     private suspend fun checkAndAwardStreakBonus(uid: String) {
-        val tasks = _uiState.value.todaysTasks
+        val tasks = taskRepo.getTodaysTasksDirect(uid)
         val allDone = tasks.isNotEmpty() && tasks.all { it.isCompleted }
         if (allDone) {
             userRepo.updateStreak(uid)
-            val streak = _uiState.value.economy.currentStreak
+            val streak = userRepo.observeEconomy(uid).first()?.currentStreak ?: 0
             if (streak > 0 && streak % 7 == 0) {
                 userRepo.addActionPoints(uid, 100)
             }

@@ -49,16 +49,16 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(3) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(6) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `user_profile` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `age` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL NOT NULL, `weightKg` REAL NOT NULL, `fitnessLevel` TEXT NOT NULL, `primaryGoal` TEXT NOT NULL, `dietaryStyle` TEXT NOT NULL, `workoutDaysPerWeek` INTEGER NOT NULL, `wakeTimeHour` INTEGER NOT NULL, `sleepTimeHour` INTEGER NOT NULL, `onboardingComplete` INTEGER NOT NULL, `joinDateMs` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `user_profile` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `age` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL NOT NULL, `weightKg` REAL NOT NULL, `fitnessLevel` TEXT NOT NULL, `primaryGoal` TEXT NOT NULL, `dietaryStyle` TEXT NOT NULL, `workoutDaysPerWeek` INTEGER NOT NULL, `wakeTimeHour` INTEGER NOT NULL, `sleepTimeHour` INTEGER NOT NULL, `onboardingComplete` INTEGER NOT NULL, `joinDateMs` INTEGER NOT NULL, `transformationMonths` INTEGER NOT NULL, `workoutLocation` TEXT NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `attributes` (`type` TEXT NOT NULL, `level` INTEGER NOT NULL, `currentXp` INTEGER NOT NULL, `totalXpEarned` INTEGER NOT NULL, PRIMARY KEY(`type`))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `daily_tasks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `taskType` TEXT NOT NULL, `targetAttribute` TEXT NOT NULL, `xpReward` INTEGER NOT NULL, `apReward` INTEGER NOT NULL, `sets` INTEGER, `reps` INTEGER, `durationMinutes` INTEGER, `isCompleted` INTEGER NOT NULL, `completedAtMs` INTEGER, `dateMs` INTEGER NOT NULL, `difficultyMultiplier` REAL NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `daily_tasks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `taskType` TEXT NOT NULL, `targetAttribute` TEXT NOT NULL, `xpReward` INTEGER NOT NULL, `apReward` INTEGER NOT NULL, `sets` INTEGER, `reps` INTEGER, `durationMinutes` INTEGER, `isCompleted` INTEGER NOT NULL, `completedAtMs` INTEGER, `dateMs` INTEGER NOT NULL, `difficultyMultiplier` REAL NOT NULL, `weight` TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `reward_cards` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `apCost` INTEGER NOT NULL, `emoji` TEXT NOT NULL, `isPredefined` INTEGER NOT NULL, `isRedeemed` INTEGER NOT NULL, `redeemedAtMs` INTEGER, `lastRedeemedAtMs` INTEGER, `timesRedeemed` INTEGER NOT NULL, `hasTask` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `taskProgress` INTEGER NOT NULL, `taskTarget` INTEGER NOT NULL, `taskCompleted` INTEGER NOT NULL, `targetAttribute` TEXT NOT NULL, `bonusXp` INTEGER NOT NULL, `bonusAp` INTEGER NOT NULL, `overachieveXpPerCount` INTEGER NOT NULL, `overachieveApPerCount` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `economy` (`id` INTEGER NOT NULL, `totalActionPoints` INTEGER NOT NULL, `availableActionPoints` INTEGER NOT NULL, `totalSpent` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `longestStreak` INTEGER NOT NULL, `lastCompletionDateMs` INTEGER, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dac24c74e71afae38df2ae2d0f8bacef')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '80386dfbe5df86c2bdcf317aaa356aae')");
       }
 
       @Override
@@ -111,7 +111,7 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
       @NonNull
       public RoomOpenHelper.ValidationResult onValidateSchema(
           @NonNull final SupportSQLiteDatabase db) {
-        final HashMap<String, TableInfo.Column> _columnsUserProfile = new HashMap<String, TableInfo.Column>(14);
+        final HashMap<String, TableInfo.Column> _columnsUserProfile = new HashMap<String, TableInfo.Column>(16);
         _columnsUserProfile.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsUserProfile.put("name", new TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsUserProfile.put("age", new TableInfo.Column("age", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -126,6 +126,8 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
         _columnsUserProfile.put("sleepTimeHour", new TableInfo.Column("sleepTimeHour", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsUserProfile.put("onboardingComplete", new TableInfo.Column("onboardingComplete", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsUserProfile.put("joinDateMs", new TableInfo.Column("joinDateMs", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsUserProfile.put("transformationMonths", new TableInfo.Column("transformationMonths", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsUserProfile.put("workoutLocation", new TableInfo.Column("workoutLocation", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysUserProfile = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesUserProfile = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoUserProfile = new TableInfo("user_profile", _columnsUserProfile, _foreignKeysUserProfile, _indicesUserProfile);
@@ -149,7 +151,7 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
                   + " Expected:\n" + _infoAttributes + "\n"
                   + " Found:\n" + _existingAttributes);
         }
-        final HashMap<String, TableInfo.Column> _columnsDailyTasks = new HashMap<String, TableInfo.Column>(14);
+        final HashMap<String, TableInfo.Column> _columnsDailyTasks = new HashMap<String, TableInfo.Column>(15);
         _columnsDailyTasks.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDailyTasks.put("title", new TableInfo.Column("title", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDailyTasks.put("description", new TableInfo.Column("description", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -164,6 +166,7 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
         _columnsDailyTasks.put("completedAtMs", new TableInfo.Column("completedAtMs", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDailyTasks.put("dateMs", new TableInfo.Column("dateMs", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDailyTasks.put("difficultyMultiplier", new TableInfo.Column("difficultyMultiplier", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDailyTasks.put("weight", new TableInfo.Column("weight", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysDailyTasks = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesDailyTasks = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoDailyTasks = new TableInfo("daily_tasks", _columnsDailyTasks, _foreignKeysDailyTasks, _indicesDailyTasks);
@@ -222,7 +225,7 @@ public final class FitQuestDatabase_Impl extends FitQuestDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "dac24c74e71afae38df2ae2d0f8bacef", "24b2bb1aaed1df23fe05367c0fde7ebf");
+    }, "80386dfbe5df86c2bdcf317aaa356aae", "916b42cf75bece4d8824377a6ac1b4df");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

@@ -221,7 +221,7 @@ fun TaskItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(enabled = !task.isCompleted) { onComplete() },
+            .clickable { onComplete() },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         border = BorderStroke(1.dp, borderStrokeColor)
@@ -331,6 +331,19 @@ fun TaskItem(
                         )
                     }
                 }
+            }
+
+            // Checklist circle indicator
+            Box(
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(if (task.isCompleted) SuccessGreen else Color.Black, CircleShape)
+                    .border(1.5.dp, if (task.isCompleted) SuccessGreen else BorderNavy, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                // Keep circle empty when completed (no tick symbol)
             }
         }
     }
@@ -647,4 +660,103 @@ fun Rank.iconResId(): Int = when (this) {
     Rank.MYTHIC_RAIDER -> com.fitquest.rpg.R.drawable.ic_tier_mythic
     Rank.SHADOW_MONARCH -> com.fitquest.rpg.R.drawable.ic_tier_monarch
     Rank.ARISE -> com.fitquest.rpg.R.drawable.ic_tier_arise
+}
+
+/**
+ * A premium RPG-themed loading spinner.
+ * Draws an inner pulsing energy core with a rotating outer neon ring.
+ */
+@Composable
+fun FitQuestLoadingSpinner(
+    modifier: Modifier = Modifier,
+    size: Dp = 50.dp,
+    accentColor: Color = SuccessGreen
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "loadingTransition")
+    
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "loadingRotation"
+    )
+
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "loadingPulse"
+    )
+
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "loadingGlowAlpha"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.size(size)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val strokeWidth = 4.dp.toPx()
+            val inset = strokeWidth / 2
+            val arcSize = Size(this.size.width - strokeWidth, this.size.height - strokeWidth)
+
+            // 1. Draw static background circular track
+            drawArc(
+                color = Color.White.copy(alpha = 0.05f),
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = arcSize,
+                style = Stroke(strokeWidth)
+            )
+
+            // 2. Draw rotating outer segment arc (with glow)
+            drawArc(
+                color = accentColor.copy(alpha = 0.2f),
+                startAngle = rotation,
+                sweepAngle = 90f,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = arcSize,
+                style = Stroke(strokeWidth + 2.dp.toPx(), cap = StrokeCap.Round)
+            )
+            drawArc(
+                color = accentColor,
+                startAngle = rotation,
+                sweepAngle = 90f,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = arcSize,
+                style = Stroke(strokeWidth, cap = StrokeCap.Round)
+            )
+
+            // 3. Draw pulsing core circle
+            val center = Offset(this.size.width / 2, this.size.height / 2)
+            val baseRadius = (this.size.width / 4)
+            drawCircle(
+                color = accentColor.copy(alpha = glowAlpha),
+                radius = baseRadius * pulseScale + 4.dp.toPx(),
+                center = center
+            )
+            drawCircle(
+                color = accentColor,
+                radius = baseRadius * pulseScale,
+                center = center
+            )
+        }
+    }
 }

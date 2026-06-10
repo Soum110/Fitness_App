@@ -76,18 +76,18 @@ class WorkoutViewModel @Inject constructor(
 
 @Composable
 fun WorkoutScreen(
-    onCompleteTask: (Long) -> Unit,
+    onToggleTask: (Long) -> Unit,
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-
+ 
     // Onboarding Tutorial States
     val context = LocalContext.current
     var showTutorial by remember { mutableStateOf(false) }
     var tutorialStep by remember { mutableStateOf(0) }
     val tutorialAnchors = remember { mutableStateMapOf<String, Rect>() }
     val lazyListState = rememberLazyListState()
-
+ 
     LaunchedEffect(tutorialStep, showTutorial, state.workoutTasks) {
         if (showTutorial) {
             val targetIndex = when (tutorialStep) {
@@ -101,130 +101,148 @@ fun WorkoutScreen(
             } catch (e: Exception) {}
         }
     }
-
+ 
     LaunchedEffect(state.workoutTasks, state.isLoading) {
         if (!state.isLoading) {
             showTutorial = !TutorialManager.isTutorialCompleted(context, "workout")
         }
     }
-
+ 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-        // Header
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 16.dp)
-                .tutorialAnchor("workout_list", tutorialAnchors)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_strength),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(28.dp)
-                )
-                Text(
-                    "TODAY'S WORKOUT",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                )
-            }
-            Text(
-                "Week ${state.weekNumber} — ${state.phaseDescription}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = StrengthRed.copy(alpha = 0.8f)
-            )
-        }
-
-        // Overload cycle legend
-        RpgCard(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .tutorialAnchor("week_phase", tutorialAnchors),
-            glowColor = StrengthRed
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                CycleWeekChip("W1", "Base", state.weekNumber % 4 == 1, Color(0xFF66BB6A))
-                CycleWeekChip("W2", "+Reps", state.weekNumber % 4 == 2, Color(0xFF42A5F5))
-                CycleWeekChip("W3", "+Sets", state.weekNumber % 4 == 3, StrengthRed)
-                CycleWeekChip("W4", "Deload", state.weekNumber % 4 == 0, Color(0xFFFFD54F))
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        if (state.workoutTasks.isEmpty()) {
-            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(color = StrengthRed)
-                    } else {
-                        Text("✅ All done for today!", style = MaterialTheme.typography.headlineSmall, color = StrengthRed)
-                        Text("Rest and recover. Come back tomorrow.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 64.dp, accentColor = StrengthRed)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "PREPARING WORKOUT...",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
         } else {
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
             ) {
-                items(state.workoutTasks, key = { it.id }) { task ->
-                    TaskItem(task = task, onComplete = { onCompleteTask(task.id) })
-                }
-
-                item {
-                    // Rest timer info card
-                    RpgCard(
-                        glowColor = Color(0xFF42A5F5),
-                        modifier = Modifier.tutorialAnchor("rest_timer", tutorialAnchors)
+                // Header
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 16.dp)
+                        .tutorialAnchor("workout_list", tutorialAnchors)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_timer),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                "REST BETWEEN SETS",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = Color(0xFF42A5F5),
-                                letterSpacing = 2.sp
-                            )
-                        }
-                        Spacer(Modifier.height(6.dp))
+                        Icon(
+                            painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_strength),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(28.dp)
+                        )
                         Text(
-                            "Compound movements (squats, rows): 2–3 min\nIsolation movements (curls, raises): 60–90 sec\nCardio intervals: 30–60 sec",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            "TODAY'S WORKOUT",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
                         )
                     }
-                    Spacer(Modifier.height(80.dp))
+                    Text(
+                        "Week ${state.weekNumber} — ${state.phaseDescription}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = StrengthRed.copy(alpha = 0.8f)
+                    )
+                }
+ 
+                // Overload cycle legend
+                RpgCard(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .tutorialAnchor("week_phase", tutorialAnchors),
+                    glowColor = StrengthRed
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        CycleWeekChip("W1", "Base", state.weekNumber % 4 == 1, Color(0xFF66BB6A))
+                        CycleWeekChip("W2", "+Reps", state.weekNumber % 4 == 2, Color(0xFF42A5F5))
+                        CycleWeekChip("W3", "+Sets", state.weekNumber % 4 == 3, StrengthRed)
+                        CycleWeekChip("W4", "Deload", state.weekNumber % 4 == 0, Color(0xFFFFD54F))
+                    }
+                }
+ 
+                Spacer(Modifier.height(16.dp))
+ 
+                if (state.workoutTasks.isEmpty()) {
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("✅ All done for today!", style = MaterialTheme.typography.headlineSmall, color = StrengthRed)
+                            Spacer(Modifier.height(8.dp))
+                            Text("Rest and recover. Come back tomorrow.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.workoutTasks, key = { it.id }) { task ->
+                            TaskItem(task = task, onComplete = { onToggleTask(task.id) })
+                        }
+ 
+                        item {
+                            // Rest timer info card
+                            RpgCard(
+                                glowColor = Color(0xFF42A5F5),
+                                modifier = Modifier.tutorialAnchor("rest_timer", tutorialAnchors)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_timer),
+                                        contentDescription = null,
+                                        tint = Color.Unspecified,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        "REST BETWEEN SETS",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = Color(0xFF42A5F5),
+                                        letterSpacing = 2.sp
+                                    )
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    "Compound movements (squats, rows): 2–3 min\nIsolation movements (curls, raises): 60–90 sec\nCardio intervals: 30–60 sec",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(Modifier.height(80.dp))
+                        }
+                    }
                 }
             }
-        }
         }
 
         // Onboarding Tutorial Overlay

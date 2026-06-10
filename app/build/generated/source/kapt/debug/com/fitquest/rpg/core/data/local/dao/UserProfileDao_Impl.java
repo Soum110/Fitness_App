@@ -39,7 +39,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `user_profile` (`id`,`name`,`age`,`gender`,`heightCm`,`weightKg`,`fitnessLevel`,`primaryGoal`,`dietaryStyle`,`workoutDaysPerWeek`,`wakeTimeHour`,`sleepTimeHour`,`onboardingComplete`,`joinDateMs`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `user_profile` (`id`,`name`,`age`,`gender`,`heightCm`,`weightKg`,`fitnessLevel`,`primaryGoal`,`dietaryStyle`,`workoutDaysPerWeek`,`wakeTimeHour`,`sleepTimeHour`,`onboardingComplete`,`joinDateMs`,`transformationMonths`,`workoutLocation`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -80,13 +80,19 @@ public final class UserProfileDao_Impl implements UserProfileDao {
         final int _tmp = entity.getOnboardingComplete() ? 1 : 0;
         statement.bindLong(13, _tmp);
         statement.bindLong(14, entity.getJoinDateMs());
+        statement.bindLong(15, entity.getTransformationMonths());
+        if (entity.getWorkoutLocation() == null) {
+          statement.bindNull(16);
+        } else {
+          statement.bindString(16, entity.getWorkoutLocation());
+        }
       }
     };
   }
 
   @Override
   public Object upsertProfile(final UserProfileEntity profile,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -100,7 +106,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -127,6 +133,8 @@ public final class UserProfileDao_Impl implements UserProfileDao {
           final int _cursorIndexOfSleepTimeHour = CursorUtil.getColumnIndexOrThrow(_cursor, "sleepTimeHour");
           final int _cursorIndexOfOnboardingComplete = CursorUtil.getColumnIndexOrThrow(_cursor, "onboardingComplete");
           final int _cursorIndexOfJoinDateMs = CursorUtil.getColumnIndexOrThrow(_cursor, "joinDateMs");
+          final int _cursorIndexOfTransformationMonths = CursorUtil.getColumnIndexOrThrow(_cursor, "transformationMonths");
+          final int _cursorIndexOfWorkoutLocation = CursorUtil.getColumnIndexOrThrow(_cursor, "workoutLocation");
           final UserProfileEntity _result;
           if (_cursor.moveToFirst()) {
             final long _tmpId;
@@ -179,7 +187,15 @@ public final class UserProfileDao_Impl implements UserProfileDao {
             _tmpOnboardingComplete = _tmp != 0;
             final long _tmpJoinDateMs;
             _tmpJoinDateMs = _cursor.getLong(_cursorIndexOfJoinDateMs);
-            _result = new UserProfileEntity(_tmpId,_tmpName,_tmpAge,_tmpGender,_tmpHeightCm,_tmpWeightKg,_tmpFitnessLevel,_tmpPrimaryGoal,_tmpDietaryStyle,_tmpWorkoutDaysPerWeek,_tmpWakeTimeHour,_tmpSleepTimeHour,_tmpOnboardingComplete,_tmpJoinDateMs);
+            final int _tmpTransformationMonths;
+            _tmpTransformationMonths = _cursor.getInt(_cursorIndexOfTransformationMonths);
+            final String _tmpWorkoutLocation;
+            if (_cursor.isNull(_cursorIndexOfWorkoutLocation)) {
+              _tmpWorkoutLocation = null;
+            } else {
+              _tmpWorkoutLocation = _cursor.getString(_cursorIndexOfWorkoutLocation);
+            }
+            _result = new UserProfileEntity(_tmpId,_tmpName,_tmpAge,_tmpGender,_tmpHeightCm,_tmpWeightKg,_tmpFitnessLevel,_tmpPrimaryGoal,_tmpDietaryStyle,_tmpWorkoutDaysPerWeek,_tmpWakeTimeHour,_tmpSleepTimeHour,_tmpOnboardingComplete,_tmpJoinDateMs,_tmpTransformationMonths,_tmpWorkoutLocation);
           } else {
             _result = null;
           }
@@ -197,7 +213,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
   }
 
   @Override
-  public Object getProfile(final Continuation<? super UserProfileEntity> $completion) {
+  public Object getProfile(final Continuation<? super UserProfileEntity> arg0) {
     final String _sql = "SELECT * FROM user_profile WHERE id = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -221,6 +237,8 @@ public final class UserProfileDao_Impl implements UserProfileDao {
           final int _cursorIndexOfSleepTimeHour = CursorUtil.getColumnIndexOrThrow(_cursor, "sleepTimeHour");
           final int _cursorIndexOfOnboardingComplete = CursorUtil.getColumnIndexOrThrow(_cursor, "onboardingComplete");
           final int _cursorIndexOfJoinDateMs = CursorUtil.getColumnIndexOrThrow(_cursor, "joinDateMs");
+          final int _cursorIndexOfTransformationMonths = CursorUtil.getColumnIndexOrThrow(_cursor, "transformationMonths");
+          final int _cursorIndexOfWorkoutLocation = CursorUtil.getColumnIndexOrThrow(_cursor, "workoutLocation");
           final UserProfileEntity _result;
           if (_cursor.moveToFirst()) {
             final long _tmpId;
@@ -273,7 +291,15 @@ public final class UserProfileDao_Impl implements UserProfileDao {
             _tmpOnboardingComplete = _tmp != 0;
             final long _tmpJoinDateMs;
             _tmpJoinDateMs = _cursor.getLong(_cursorIndexOfJoinDateMs);
-            _result = new UserProfileEntity(_tmpId,_tmpName,_tmpAge,_tmpGender,_tmpHeightCm,_tmpWeightKg,_tmpFitnessLevel,_tmpPrimaryGoal,_tmpDietaryStyle,_tmpWorkoutDaysPerWeek,_tmpWakeTimeHour,_tmpSleepTimeHour,_tmpOnboardingComplete,_tmpJoinDateMs);
+            final int _tmpTransformationMonths;
+            _tmpTransformationMonths = _cursor.getInt(_cursorIndexOfTransformationMonths);
+            final String _tmpWorkoutLocation;
+            if (_cursor.isNull(_cursorIndexOfWorkoutLocation)) {
+              _tmpWorkoutLocation = null;
+            } else {
+              _tmpWorkoutLocation = _cursor.getString(_cursorIndexOfWorkoutLocation);
+            }
+            _result = new UserProfileEntity(_tmpId,_tmpName,_tmpAge,_tmpGender,_tmpHeightCm,_tmpWeightKg,_tmpFitnessLevel,_tmpPrimaryGoal,_tmpDietaryStyle,_tmpWorkoutDaysPerWeek,_tmpWakeTimeHour,_tmpSleepTimeHour,_tmpOnboardingComplete,_tmpJoinDateMs,_tmpTransformationMonths,_tmpWorkoutLocation);
           } else {
             _result = null;
           }
@@ -283,7 +309,7 @@ public final class UserProfileDao_Impl implements UserProfileDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @NonNull

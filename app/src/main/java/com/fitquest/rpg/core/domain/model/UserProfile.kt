@@ -17,7 +17,9 @@ data class UserProfile(
     val wakeTimeHour: Int = 7,
     val sleepTimeHour: Int = 23,
     val onboardingComplete: Boolean = false,
-    val joinDateMs: Long = System.currentTimeMillis()
+    val joinDateMs: Long = System.currentTimeMillis(),
+    val transformationMonths: Int = 6,
+    val workoutLocation: WorkoutLocation = WorkoutLocation.HOME
 ) {
     val trainingWeekNumber: Int
         get() {
@@ -32,6 +34,10 @@ data class UserProfile(
         primaryGoal == FitnessGoal.BUILD_MUSCLE && bmi < 22f -> TransformationPhase.BULK
         else -> TransformationPhase.RECOMP
     }
+}
+
+enum class WorkoutLocation(val displayName: String) {
+    HOME("Home / Travel 🏡"), GYM("Gym Access 🏋️‍♂️")
 }
 
 enum class Gender(val displayName: String) {

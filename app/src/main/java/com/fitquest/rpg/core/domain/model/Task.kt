@@ -17,10 +17,17 @@ data class DailyTask(
     val isCompleted: Boolean = false,
     val completedAtMs: Long? = null,
     val dateMs: Long = System.currentTimeMillis(),
-    val difficultyMultiplier: Float = 1.0f
+    val difficultyMultiplier: Float = 1.0f,
+    val weight: String? = null
 ) {
     fun formattedVolume(): String = when {
-        sets != null && reps != null -> "$sets sets × $reps reps"
+        sets != null && reps != null -> {
+            if (!weight.isNullOrBlank()) {
+                "$sets sets × $reps reps @ $weight"
+            } else {
+                "$sets sets × $reps reps"
+            }
+        }
         durationMinutes != null -> "$durationMinutes min"
         else -> ""
     }

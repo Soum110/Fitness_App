@@ -66,7 +66,27 @@ fun StoreScreen(
             .fillMaxSize()
             .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
-        Scaffold(
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 64.dp, accentColor = GoldAP)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "LOADING REWARD VAULT...",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        letterSpacing = 2.sp
+                    )
+                }
+            }
+        } else {
+            Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             floatingActionButton = {
                 FloatingActionButton(
@@ -209,6 +229,7 @@ fun StoreScreen(
                 }
             }
             }
+        }
         }
     }
 

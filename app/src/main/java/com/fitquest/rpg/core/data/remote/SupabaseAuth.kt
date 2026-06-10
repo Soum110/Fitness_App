@@ -13,7 +13,7 @@ data class SupabaseUser(
 class SupabaseAuth(
     private val context: Context,
     private val apiService: SupabaseApiService,
-    private val apiKey: String
+    val apiKey: String
 ) {
     private val prefs: SharedPreferences = context.getSharedPreferences("supabase_auth_prefs", Context.MODE_PRIVATE)
 

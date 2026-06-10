@@ -96,7 +96,27 @@ fun AttributesScreen(
             .fillMaxSize()
             .tutorialAnchor("screen_root", tutorialAnchors)
     ) {
-        Scaffold(containerColor = Color.Black) { padding ->
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 64.dp, accentColor = NeonPurple)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "SYNCING ATTRIBUTES...",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        letterSpacing = 2.sp
+                    )
+                }
+            }
+        } else {
+            Scaffold(containerColor = Color.Black) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -244,6 +264,7 @@ fun AttributesScreen(
 
                 Spacer(Modifier.height(80.dp))
             }
+        }
         }
 
         // Phone rim upgrade glow overlay

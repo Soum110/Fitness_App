@@ -43,13 +43,15 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
 
   private final SharedSQLiteStatement __preparedStmtOfDeleteTasksForDay;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteUncompletedTasksForDayByType;
+
   public DailyTaskDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfDailyTaskEntity = new EntityInsertionAdapter<DailyTaskEntity>(__db) {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `daily_tasks` (`id`,`title`,`description`,`taskType`,`targetAttribute`,`xpReward`,`apReward`,`sets`,`reps`,`durationMinutes`,`isCompleted`,`completedAtMs`,`dateMs`,`difficultyMultiplier`) VALUES (nullif(?, 0),?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `daily_tasks` (`id`,`title`,`description`,`taskType`,`targetAttribute`,`xpReward`,`apReward`,`sets`,`reps`,`durationMinutes`,`isCompleted`,`completedAtMs`,`dateMs`,`difficultyMultiplier`,`weight`) VALUES (nullif(?, 0),?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -102,13 +104,18 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
         }
         statement.bindLong(13, entity.getDateMs());
         statement.bindDouble(14, entity.getDifficultyMultiplier());
+        if (entity.getWeight() == null) {
+          statement.bindNull(15);
+        } else {
+          statement.bindString(15, entity.getWeight());
+        }
       }
     };
     this.__updateAdapterOfDailyTaskEntity = new EntityDeletionOrUpdateAdapter<DailyTaskEntity>(__db) {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `daily_tasks` SET `id` = ?,`title` = ?,`description` = ?,`taskType` = ?,`targetAttribute` = ?,`xpReward` = ?,`apReward` = ?,`sets` = ?,`reps` = ?,`durationMinutes` = ?,`isCompleted` = ?,`completedAtMs` = ?,`dateMs` = ?,`difficultyMultiplier` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `daily_tasks` SET `id` = ?,`title` = ?,`description` = ?,`taskType` = ?,`targetAttribute` = ?,`xpReward` = ?,`apReward` = ?,`sets` = ?,`reps` = ?,`durationMinutes` = ?,`isCompleted` = ?,`completedAtMs` = ?,`dateMs` = ?,`difficultyMultiplier` = ?,`weight` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -161,7 +168,12 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
         }
         statement.bindLong(13, entity.getDateMs());
         statement.bindDouble(14, entity.getDifficultyMultiplier());
-        statement.bindLong(15, entity.getId());
+        if (entity.getWeight() == null) {
+          statement.bindNull(15);
+        } else {
+          statement.bindString(15, entity.getWeight());
+        }
+        statement.bindLong(16, entity.getId());
       }
     };
     this.__preparedStmtOfDeleteTasksForDay = new SharedSQLiteStatement(__db) {
@@ -169,6 +181,14 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
       @NonNull
       public String createQuery() {
         final String _query = "DELETE FROM daily_tasks WHERE dateMs >= ? AND dateMs < ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfDeleteUncompletedTasksForDayByType = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM daily_tasks WHERE dateMs >= ? AND dateMs < ? AND taskType = ? AND isCompleted = 0";
         return _query;
       }
     };
@@ -246,6 +266,40 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
   }
 
   @Override
+  public Object deleteUncompletedTasksForDayByType(final long startOfDay, final long endOfDay,
+      final String type, final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteUncompletedTasksForDayByType.acquire();
+        int _argIndex = 1;
+        _stmt.bindLong(_argIndex, startOfDay);
+        _argIndex = 2;
+        _stmt.bindLong(_argIndex, endOfDay);
+        _argIndex = 3;
+        if (type == null) {
+          _stmt.bindNull(_argIndex);
+        } else {
+          _stmt.bindString(_argIndex, type);
+        }
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteUncompletedTasksForDayByType.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
   public Flow<List<DailyTaskEntity>> observeTasksForDay(final long startOfDay,
       final long endOfDay) {
     final String _sql = "SELECT * FROM daily_tasks WHERE dateMs >= ? AND dateMs < ? ORDER BY isCompleted ASC, taskType ASC";
@@ -274,6 +328,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           final int _cursorIndexOfCompletedAtMs = CursorUtil.getColumnIndexOrThrow(_cursor, "completedAtMs");
           final int _cursorIndexOfDateMs = CursorUtil.getColumnIndexOrThrow(_cursor, "dateMs");
           final int _cursorIndexOfDifficultyMultiplier = CursorUtil.getColumnIndexOrThrow(_cursor, "difficultyMultiplier");
+          final int _cursorIndexOfWeight = CursorUtil.getColumnIndexOrThrow(_cursor, "weight");
           final List<DailyTaskEntity> _result = new ArrayList<DailyTaskEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final DailyTaskEntity _item;
@@ -339,7 +394,13 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
             _tmpDateMs = _cursor.getLong(_cursorIndexOfDateMs);
             final float _tmpDifficultyMultiplier;
             _tmpDifficultyMultiplier = _cursor.getFloat(_cursorIndexOfDifficultyMultiplier);
-            _item = new DailyTaskEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpTaskType,_tmpTargetAttribute,_tmpXpReward,_tmpApReward,_tmpSets,_tmpReps,_tmpDurationMinutes,_tmpIsCompleted,_tmpCompletedAtMs,_tmpDateMs,_tmpDifficultyMultiplier);
+            final String _tmpWeight;
+            if (_cursor.isNull(_cursorIndexOfWeight)) {
+              _tmpWeight = null;
+            } else {
+              _tmpWeight = _cursor.getString(_cursorIndexOfWeight);
+            }
+            _item = new DailyTaskEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpTaskType,_tmpTargetAttribute,_tmpXpReward,_tmpApReward,_tmpSets,_tmpReps,_tmpDurationMinutes,_tmpIsCompleted,_tmpCompletedAtMs,_tmpDateMs,_tmpDifficultyMultiplier,_tmpWeight);
             _result.add(_item);
           }
           return _result;
@@ -382,6 +443,7 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
           final int _cursorIndexOfCompletedAtMs = CursorUtil.getColumnIndexOrThrow(_cursor, "completedAtMs");
           final int _cursorIndexOfDateMs = CursorUtil.getColumnIndexOrThrow(_cursor, "dateMs");
           final int _cursorIndexOfDifficultyMultiplier = CursorUtil.getColumnIndexOrThrow(_cursor, "difficultyMultiplier");
+          final int _cursorIndexOfWeight = CursorUtil.getColumnIndexOrThrow(_cursor, "weight");
           final DailyTaskEntity _result;
           if (_cursor.moveToFirst()) {
             final long _tmpId;
@@ -446,7 +508,13 @@ public final class DailyTaskDao_Impl implements DailyTaskDao {
             _tmpDateMs = _cursor.getLong(_cursorIndexOfDateMs);
             final float _tmpDifficultyMultiplier;
             _tmpDifficultyMultiplier = _cursor.getFloat(_cursorIndexOfDifficultyMultiplier);
-            _result = new DailyTaskEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpTaskType,_tmpTargetAttribute,_tmpXpReward,_tmpApReward,_tmpSets,_tmpReps,_tmpDurationMinutes,_tmpIsCompleted,_tmpCompletedAtMs,_tmpDateMs,_tmpDifficultyMultiplier);
+            final String _tmpWeight;
+            if (_cursor.isNull(_cursorIndexOfWeight)) {
+              _tmpWeight = null;
+            } else {
+              _tmpWeight = _cursor.getString(_cursorIndexOfWeight);
+            }
+            _result = new DailyTaskEntity(_tmpId,_tmpTitle,_tmpDescription,_tmpTaskType,_tmpTargetAttribute,_tmpXpReward,_tmpApReward,_tmpSets,_tmpReps,_tmpDurationMinutes,_tmpIsCompleted,_tmpCompletedAtMs,_tmpDateMs,_tmpDifficultyMultiplier,_tmpWeight);
           } else {
             _result = null;
           }

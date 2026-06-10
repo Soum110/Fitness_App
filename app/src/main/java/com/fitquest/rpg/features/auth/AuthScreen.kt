@@ -62,10 +62,10 @@ fun AuthScreen(
 
                 // ── Logo / Branding ──────────────────────────────────────────
                 Icon(
-                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
+                    painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_launcher_foreground),
                     contentDescription = null,
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(96.dp)
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(
@@ -112,11 +112,20 @@ fun AuthScreen(
                         ) {
                             listOf("Login", "Register").forEachIndexed { idx, label ->
                                 val isSelected = (idx == 0) == state.isLoginMode
+                                val containerColor by animateColorAsState(
+                                    targetValue = if (isSelected) SuccessGreen.copy(alpha = 0.15f) else Color.Transparent,
+                                    label = "tabBg"
+                                )
+                                val borderColor by animateColorAsState(
+                                    targetValue = if (isSelected) SuccessGreen else Color.Transparent,
+                                    label = "tabBorder"
+                                )
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(if (isSelected) Color.White else Color.Transparent)
+                                        .background(containerColor)
+                                        .border(1.dp, borderColor, RoundedCornerShape(4.dp))
                                         .clickable {
                                             if ((idx == 0) != state.isLoginMode) viewModel.toggleMode()
                                         }
@@ -125,7 +134,7 @@ fun AuthScreen(
                                 ) {
                                     Text(
                                         label,
-                                        color = if (isSelected) Color.Black else Color(0xFF888888),
+                                        color = if (isSelected) Color.White else Color(0xFF888888),
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.labelLarge
                                     )
@@ -151,10 +160,12 @@ fun AuthScreen(
                             ),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.White,
+                                focusedBorderColor = SuccessGreen,
                                 unfocusedBorderColor = BorderNavy,
-                                focusedLabelColor = Color.White,
-                                cursorColor = Color.White
+                                focusedLabelColor = SuccessGreen,
+                                cursorColor = SuccessGreen,
+                                focusedLeadingIconColor = SuccessGreen,
+                                unfocusedLeadingIconColor = Color.White
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
@@ -194,10 +205,12 @@ fun AuthScreen(
                             ),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.White,
+                                focusedBorderColor = SuccessGreen,
                                 unfocusedBorderColor = BorderNavy,
-                                focusedLabelColor = Color.White,
-                                cursorColor = Color.White
+                                focusedLabelColor = SuccessGreen,
+                                cursorColor = SuccessGreen,
+                                focusedLeadingIconColor = SuccessGreen,
+                                unfocusedLeadingIconColor = Color.White
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
@@ -247,7 +260,7 @@ fun AuthScreen(
                             enabled = !state.isLoading,
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
+                                containerColor = SuccessGreen,
                                 contentColor = Color.Black,
                                 disabledContainerColor = Color(0xFF1F1F1F),
                                 disabledContentColor = Color(0xFF888888)
@@ -261,9 +274,10 @@ fun AuthScreen(
                                 )
                             } else {
                                 Text(
-                                    if (state.isLoginMode) "Login & Arise ⚔️" else "Create Account ✨",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    if (state.isLoginMode) "LOGIN & ARISE" else "CREATE ACCOUNT",
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 14.sp,
+                                    letterSpacing = 1.sp
                                 )
                             }
                         }

@@ -5,8 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -90,149 +90,160 @@ fun FitQuestNavigation(supabaseAuth: SupabaseAuth) {
     val currentDest = currentBackStack?.destination
     val showBottomNav = currentDest?.route !in listOf(Screen.Auth.route, Screen.Onboarding.route)
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color.Black,
-        bottomBar = {
-            if (showBottomNav) {
-                NavigationBar(
-                    containerColor = Color.Black,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier.background(Color.Black).drawBehind {
-                        drawLine(
-                            color = BorderNavy,
-                            start = Offset(0f, 0f),
-                            end = Offset(size.width, 0f),
-                            strokeWidth = 1.dp.toPx()
-                        )
-                    }
-                ) {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDest?.hierarchy?.any { it.route == item.screen.route } == true
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(item.screen.route) {
-                                    popUpTo(Screen.Dashboard.route) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(item.icon, contentDescription = item.label) },
-                            label = { Text(item.label) },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor   = Color.White,
-                                selectedTextColor   = Color.White,
-                                indicatorColor      = Color.Transparent,
-                                unselectedIconColor = Color(0xFF666666),
-                                unselectedTextColor = Color(0xFF666666)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        Scaffold(
+            modifier = Modifier
+                .fillMaxHeight()
+                .widthIn(max = 640.dp),
+            containerColor = Color.Black,
+            bottomBar = {
+                if (showBottomNav) {
+                    NavigationBar(
+                        containerColor = Color.Black,
+                        tonalElevation = 0.dp,
+                        modifier = Modifier.background(Color.Black).drawBehind {
+                            drawLine(
+                                color = BorderNavy,
+                                start = Offset(0f, 0f),
+                                end = Offset(size.width, 0f),
+                                strokeWidth = 1.dp.toPx()
                             )
-                        )
+                        }
+                    ) {
+                        bottomNavItems.forEach { item ->
+                            val selected = currentDest?.hierarchy?.any { it.route == item.screen.route } == true
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    navController.navigate(item.screen.route) {
+                                        popUpTo(Screen.Dashboard.route) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                icon = { Icon(item.icon, contentDescription = item.label) },
+                                label = { Text(item.label) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor   = Color.White,
+                                    selectedTextColor   = Color.White,
+                                    indicatorColor      = Color.Transparent,
+                                    unselectedIconColor = Color(0xFF666666),
+                                    unselectedTextColor = Color(0xFF666666)
+                                )
+                            )
+                        }
                     }
                 }
             }
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            // ── Auth ────────────────────────────────────────────────────────
-            composable(Screen.Auth.route) {
-                val authVm = hiltViewModel<AuthViewModel>()
-                AuthScreen(
-                    onAuthSuccess = { isNewUser ->
-                        if (isNewUser) {
-                            // New registration → onboarding
-                            navController.navigate(Screen.Onboarding.route) {
-                                popUpTo(Screen.Auth.route) { inclusive = true }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                // ── Auth ────────────────────────────────────────────────────────
+                composable(Screen.Auth.route) {
+                    val authVm = hiltViewModel<AuthViewModel>()
+                    AuthScreen(
+                        onAuthSuccess = { isNewUser ->
+                            if (isNewUser) {
+                                // New registration → onboarding
+                                navController.navigate(Screen.Onboarding.route) {
+                                    popUpTo(Screen.Auth.route) { inclusive = true }
+                                }
+                            } else {
+                                // Existing user → dashboard (will load their Firestore data)
+                                navController.navigate(Screen.Dashboard.route) {
+                                    popUpTo(Screen.Auth.route) { inclusive = true }
+                                }
                             }
-                        } else {
-                            // Existing user → dashboard (will load their Firestore data)
+                        },
+                        viewModel = authVm
+                    )
+                }
+
+                // ── Onboarding ──────────────────────────────────────────────────
+                composable(Screen.Onboarding.route) {
+                    val vm = hiltViewModel<OnboardingViewModel>()
+                    OnboardingScreen(
+                        onComplete = {
                             navController.navigate(Screen.Dashboard.route) {
-                                popUpTo(Screen.Auth.route) { inclusive = true }
+                                popUpTo(Screen.Onboarding.route) { inclusive = true }
+                            }
+                        },
+                        viewModel = vm
+                    )
+                }
+
+                // ── Main Tabs ───────────────────────────────────────────────────
+                composable(Screen.Dashboard.route) {
+                    DashboardScreen(
+                        onNavigateToStore = {
+                            navController.navigate(Screen.Store.route) {
+                                popUpTo(Screen.Dashboard.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        onNavigateToAttributes = {
+                            navController.navigate(Screen.Attributes.route) {
+                                popUpTo(Screen.Dashboard.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        onNavigateToOnboarding = {
+                            navController.navigate(Screen.Onboarding.route) {
+                                popUpTo(Screen.Dashboard.route) { inclusive = true }
                             }
                         }
-                    },
-                    viewModel = authVm
-                )
-            }
+                    )
+                }
 
-            // ── Onboarding ──────────────────────────────────────────────────
-            composable(Screen.Onboarding.route) {
-                val vm = hiltViewModel<OnboardingViewModel>()
-                OnboardingScreen(
-                    onComplete = {
-                        navController.navigate(Screen.Dashboard.route) {
-                            popUpTo(Screen.Onboarding.route) { inclusive = true }
-                        }
-                    },
-                    viewModel = vm
-                )
-            }
+                composable(Screen.Diet.route) {
+                    DietScreen()
+                }
 
-            // ── Main Tabs ───────────────────────────────────────────────────
-            composable(Screen.Dashboard.route) {
-                DashboardScreen(
-                    onNavigateToStore = {
-                        navController.navigate(Screen.Store.route) {
-                            popUpTo(Screen.Dashboard.route) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onNavigateToAttributes = {
-                        navController.navigate(Screen.Attributes.route) {
-                            popUpTo(Screen.Dashboard.route) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onNavigateToOnboarding = {
-                        navController.navigate(Screen.Onboarding.route) {
-                            popUpTo(Screen.Dashboard.route) { inclusive = true }
-                        }
-                    }
-                )
-            }
+                composable(Screen.Attributes.route) {
+                    AttributesScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateToRoadmap = { navController.navigate(Screen.Roadmap.route) }
+                    )
+                }
 
-            composable(Screen.Diet.route) {
-                DietScreen()
-            }
+                composable(Screen.Roadmap.route) {
+                    RoadmapScreen(onBack = { navController.popBackStack() })
+                }
 
-            composable(Screen.Attributes.route) {
-                AttributesScreen(
-                    onBack = { navController.popBackStack() },
-                    onNavigateToRoadmap = { navController.navigate(Screen.Roadmap.route) }
-                )
-            }
+                composable(Screen.Store.route) {
+                    StoreScreen(onBack = { navController.popBackStack() })
+                }
 
-            composable(Screen.Roadmap.route) {
-                RoadmapScreen(onBack = { navController.popBackStack() })
-            }
-
-            composable(Screen.Store.route) {
-                StoreScreen(onBack = { navController.popBackStack() })
-            }
-
-            composable(Screen.Profile.route) {
-                val authVm = hiltViewModel<AuthViewModel>()
-                ProfileScreen(
-                    onLogout = {
-                        authVm.signOut {
-                            navController.navigate(Screen.Auth.route) {
-                                popUpTo(0) { inclusive = true } // Clear entire back stack
+                composable(Screen.Profile.route) {
+                    val authVm = hiltViewModel<AuthViewModel>()
+                    ProfileScreen(
+                        onLogout = {
+                            authVm.signOut {
+                                navController.navigate(Screen.Auth.route) {
+                                    popUpTo(0) { inclusive = true } // Clear entire back stack
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }

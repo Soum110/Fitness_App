@@ -26,7 +26,9 @@ data class OnboardingState(
     val wakeTimeHour: Int = 7,
     val sleepTimeHour: Int = 23,
     val isSaving: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val transformationMonths: Int = 6,
+    val workoutLocation: WorkoutLocation = WorkoutLocation.HOME
 )
 
 @HiltViewModel
@@ -54,6 +56,8 @@ class OnboardingViewModel @Inject constructor(
     fun updateWorkoutDays(v: Int) { _state.value = _state.value.copy(workoutDaysPerWeek = v) }
     fun updateWakeTime(v: Int) { _state.value = _state.value.copy(wakeTimeHour = v) }
     fun updateSleepTime(v: Int) { _state.value = _state.value.copy(sleepTimeHour = v) }
+    fun updateTransformationMonths(v: Int) { _state.value = _state.value.copy(transformationMonths = v) }
+    fun updateWorkoutLocation(v: WorkoutLocation) { _state.value = _state.value.copy(workoutLocation = v) }
 
     fun finishOnboarding(onComplete: () -> Unit) {
         val uid = auth.currentUser?.uid
@@ -79,7 +83,9 @@ class OnboardingViewModel @Inject constructor(
                         workoutDaysPerWeek = s.workoutDaysPerWeek,
                         wakeTimeHour = s.wakeTimeHour,
                         sleepTimeHour = s.sleepTimeHour,
-                        onboardingComplete = true
+                        onboardingComplete = true,
+                        transformationMonths = s.transformationMonths,
+                        workoutLocation = s.workoutLocation
                     )
                 )
                 _state.value = _state.value.copy(isSaving = false)

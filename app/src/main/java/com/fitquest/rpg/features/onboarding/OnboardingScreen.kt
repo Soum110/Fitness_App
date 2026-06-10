@@ -39,7 +39,7 @@ fun OnboardingScreen(
             LinearProgressIndicator(
                 progress = { (state.step + 1f) / viewModel.totalSteps },
                 modifier = Modifier.fillMaxWidth(),
-                color = Color.White,
+                color = SuccessGreen,
                 trackColor = Color(0xFF141414)
             )
 
@@ -49,7 +49,7 @@ fun OnboardingScreen(
             Text(
                 text = "STEP ${state.step + 1} OF ${viewModel.totalSteps}",
                 style = MaterialTheme.typography.labelMedium,
-                color = Color.White,
+                color = SuccessGreen,
                 modifier = Modifier.padding(horizontal = 24.dp),
                 letterSpacing = 3.sp
             )
@@ -132,10 +132,10 @@ private fun Step0Welcome(state: OnboardingState, vm: OnboardingViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_quest),
+            painter = painterResource(id = com.fitquest.rpg.R.drawable.ic_launcher_foreground),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(72.dp)
+            modifier = Modifier.size(96.dp)
         )
         Spacer(Modifier.height(16.dp))
         Text(
@@ -204,19 +204,40 @@ private fun Step1PhysicalStats(state: OnboardingState, vm: OnboardingViewModel) 
         }
 
         // Gender
-        Text("Gender", style = MaterialTheme.typography.titleMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("GENDER", style = MaterialTheme.typography.labelLarge, color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Gender.values().forEach { g ->
                 val selected = state.gender == g
-                FilterChip(
-                    selected = selected,
-                    onClick = { vm.updateGender(g) },
-                    label = { Text(g.displayName) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = NeonPurple,
-                        selectedLabelColor = Color.White
-                    )
+                val chipBg by animateColorAsState(
+                    targetValue = if (selected) SuccessGreen.copy(alpha = 0.15f) else CardNavy,
+                    label = "genderChipBg"
                 )
+                val chipBorder by animateColorAsState(
+                    targetValue = if (selected) SuccessGreen else BorderNavy,
+                    label = "genderChipBorder"
+                )
+                
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { vm.updateGender(g) }
+                        .background(chipBg, RoundedCornerShape(8.dp))
+                        .border(1.dp, chipBorder, RoundedCornerShape(8.dp))
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = g.displayName.uppercase(),
+                        color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        style = MaterialTheme.typography.bodyMedium,
+                        letterSpacing = 0.5.sp
+                    )
+                }
             }
         }
 
@@ -249,6 +270,44 @@ private fun Step2Goals(state: OnboardingState, vm: OnboardingViewModel) {
                 selected = state.primaryGoal == goal,
                 title = goal.displayName,
                 onClick = { vm.updateGoal(goal) }
+            )
+        }
+        
+        Spacer(Modifier.height(16.dp))
+        Text("⏱️ Transformation Timeline", style = MaterialTheme.typography.titleMedium, color = Color.White)
+        Text("Select how fast you want to complete your transformation. Shorter timelines increase the daily workout and quest difficulty significantly.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(8.dp))
+        
+        val timelineOptions = listOf(3, 6, 9, 12, 18, 24)
+        val timelineLabels = listOf(
+            "3 Months (Aggressive / Hard)",
+            "6 Months (Active / Medium-Hard)",
+            "9 Months (Balanced / Medium)",
+            "12 Months (Steady / Easy-Medium)",
+            "18 Months (Steady / Easy)",
+            "24 Months (Very Steady / Very Easy)"
+        )
+        val currentIndex = timelineOptions.indexOf(state.transformationMonths).coerceIn(0, 5)
+        
+        LabeledSlider(
+            label = timelineLabels[currentIndex],
+            value = currentIndex.toFloat(),
+            min = 0f, max = 5f,
+            steps = 4
+        ) { indexVal ->
+            val index = indexVal.toInt().coerceIn(0, 5)
+            vm.updateTransformationMonths(timelineOptions[index])
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Text("🏋️‍♂️ Training Location", style = MaterialTheme.typography.titleMedium, color = Color.White)
+        Text("Choose where you want to perform your workouts.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(8.dp))
+        WorkoutLocation.values().forEach { location ->
+            OptionCard(
+                selected = state.workoutLocation == location,
+                title = location.displayName,
+                onClick = { vm.updateWorkoutLocation(location) }
             )
         }
     }
@@ -317,6 +376,8 @@ private fun Step4Schedule(state: OnboardingState, vm: OnboardingViewModel) {
                 HorizontalDivider(color = BorderNavy, modifier = Modifier.padding(vertical = 8.dp))
                 ProfileSummaryRow("Fitness Level", state.fitnessLevel.displayName)
                 ProfileSummaryRow("Goal", state.primaryGoal.displayName)
+                ProfileSummaryRow("Timeline Target", "${state.transformationMonths} Months")
+                ProfileSummaryRow("Training Location", state.workoutLocation.displayName)
                 ProfileSummaryRow("Diet", state.dietaryStyle.displayName)
                 ProfileSummaryRow("Training Days", "${state.workoutDaysPerWeek}x / week")
             }
@@ -325,40 +386,84 @@ private fun Step4Schedule(state: OnboardingState, vm: OnboardingViewModel) {
 }
 
 @Composable
-private fun LabeledSlider(label: String, value: Float, min: Float, max: Float, onChanged: (Float) -> Unit) {
+private fun LabeledSlider(
+    label: String,
+    value: Float,
+    min: Float,
+    max: Float,
+    steps: Int = 0,
+    onChanged: (Float) -> Unit
+) {
     Column {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = label.uppercase(),
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+        Spacer(Modifier.height(4.dp))
         Slider(
             value = value,
             onValueChange = onChanged,
             valueRange = min..max,
-            colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Color.White)
+            steps = steps,
+            colors = SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = SuccessGreen,
+                inactiveTrackColor = CardNavy,
+                activeTickColor = SuccessGreen,
+                inactiveTickColor = BorderNavy
+            )
         )
     }
 }
 
 @Composable
 private fun OptionCard(selected: Boolean, title: String, onClick: () -> Unit) {
+    val containerColor by animateColorAsState(
+        targetValue = if (selected) SuccessGreen.copy(alpha = 0.15f) else CardNavy,
+        label = "optionCardContainer"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) SuccessGreen else BorderNavy,
+        label = "optionCardBorder"
+    )
+    val leftBarWidth by animateDpAsState(
+        targetValue = if (selected) 4.dp else 0.dp,
+        label = "optionCardLeftBarWidth"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) Color(0xFF141414) else CardNavy
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (selected) Color.White else BorderNavy
-        )
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = BorderStroke(1.dp, borderColor)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-            if (selected) Text("✓", color = Color.White, fontWeight = FontWeight.Bold)
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(leftBarWidth)
+                    .background(SuccessGreen)
+            )
+            
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+            )
         }
     }
 }

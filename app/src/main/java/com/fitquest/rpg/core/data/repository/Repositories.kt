@@ -139,7 +139,7 @@ class UserRepository @Inject constructor(
 
     suspend fun addXpToAttribute(uid: String, type: AttributeType, xpAmount: Long) {
         val existing = attributeDao.getAttribute(type.name) ?: AttributeEntity(type = type.name)
-        val newTotalXp = existing.totalXpEarned + xpAmount
+        val newTotalXp = (existing.totalXpEarned + xpAmount).coerceAtLeast(0)
         val (newLevel, newCurrentXp) = XpAlgorithm.levelFromTotalXp(newTotalXp)
         val updated = existing.copy(
             level = newLevel,
@@ -149,7 +149,7 @@ class UserRepository @Inject constructor(
         // Update local cache
         attributeDao.upsert(updated)
         
-        // Sync to Firestore
+        // Sync to Supabase
         syncScope.launch {
             try { supabaseRepo.saveAttribute(uid, updated.toDomain()) } catch (e: Exception) {}
         }
@@ -165,8 +165,8 @@ class UserRepository @Inject constructor(
     suspend fun addActionPoints(uid: String, amount: Int) {
         val e = economyDao.getEconomy()?.toDomain() ?: Economy()
         val updated = e.copy(
-            totalActionPoints = e.totalActionPoints + amount,
-            availableActionPoints = e.availableActionPoints + amount
+            totalActionPoints = (e.totalActionPoints + amount).coerceAtLeast(0),
+            availableActionPoints = (e.availableActionPoints + amount).coerceAtLeast(0)
         )
         economyDao.upsert(updated.toEntity())
         syncScope.launch {
@@ -275,7 +275,7 @@ class TaskRepository @Inject constructor(
         val localTask = taskDao.getTask(taskId) ?: return null
         val updated = localTask.copy(isCompleted = true, completedAtMs = System.currentTimeMillis())
         taskDao.update(updated)
-
+ 
         // Sync to Firestore in background
         syncScope.launch {
             try {
@@ -285,6 +285,31 @@ class TaskRepository @Inject constructor(
             } catch (e: Exception) {}
         }
         return updated.toDomain()
+    }
+
+    suspend fun uncompleteTask(uid: String, taskId: Long): DailyTask? {
+        val localTask = taskDao.getTask(taskId) ?: return null
+        val updated = localTask.copy(isCompleted = false, completedAtMs = null)
+        taskDao.update(updated)
+
+        // Sync to Supabase in background
+        syncScope.launch {
+            try {
+                val (start, end) = getTodayRange()
+                val allTasks = taskDao.observeTasksForDay(start, end).first().map { it.toDomain() }
+                supabaseRepo.saveTasks(uid, allTasks)
+            } catch (e: Exception) {}
+        }
+        return updated.toDomain()
+    }
+
+    suspend fun getTask(taskId: Long): DailyTask? {
+        return taskDao.getTask(taskId)?.toDomain()
+    }
+
+    suspend fun getTodaysTasksDirect(uid: String): List<DailyTask> {
+        val (todayStart, todayEnd) = getTodayRange()
+        return taskDao.observeTasksForDay(todayStart, todayEnd).first().map { it.toDomain() }
     }
 
     suspend fun generateDailyTasks(uid: String, profile: UserProfile) {
@@ -299,15 +324,23 @@ class TaskRepository @Inject constructor(
         val flexibilityLevel = attributes[AttributeType.FLEXIBILITY.name] ?: 1
         val intelligenceLevel = attributes[AttributeType.INTELLIGENCE.name] ?: 1
         val energyLevel = attributes[AttributeType.ENERGY.name] ?: 1
-
-        val weekNum = profile.trainingWeekNumber
-        val tasks = mutableListOf<DailyTask>()
-        val now = System.currentTimeMillis()
-        var idCounter = now // Unique timestamp-based IDs for offline safety
-
         val exercises = fetchExercisesOrFallback(profile)
 
-        // Workout tasks (3 exercises) - scaled by STRENGTH level
+        // Calculate difficulty multiplier based on transformation target timeline
+        val timelineMultiplier = when (profile.transformationMonths) {
+            3 -> 1.3f
+            6 -> 1.15f
+            9 -> 1.0f
+            12 -> 0.9f
+            18 -> 0.8f
+            24 -> 0.7f
+            else -> 1.0f
+        }
+
+        val locationRepScale = if (profile.workoutLocation == WorkoutLocation.GYM) 0.75f else 1.0f
+        val locationRewardMultiplier = if (profile.workoutLocation == WorkoutLocation.GYM) 1.2f else 1.0f
+
+        // Workout tasks (3 exercises) - scaled by STRENGTH level and timeline target
         val levelSetBonus = strengthLevel / 15
         val levelRepBonus = strengthLevel / 5
         val baseSets = (if (profile.fitnessLevel == FitnessLevel.BEGINNER) 2 else 3) + levelSetBonus
@@ -317,85 +350,96 @@ class TaskRepository @Inject constructor(
             else -> 12
         }) + levelRepBonus
 
+        val setsToUse = Math.round(baseSets * timelineMultiplier).toInt().coerceAtLeast(2)
+        val repsToUse = Math.round(baseReps * timelineMultiplier * locationRepScale).toInt().coerceAtLeast(5)
+
+        val weekNum = profile.trainingWeekNumber
+        val tasks = mutableListOf<DailyTask>()
+        val now = System.currentTimeMillis()
+        var idCounter = now // Unique timestamp-based IDs for offline safety
+
         exercises.take(3).forEachIndexed { idx, exercise ->
             val volume = ProgressiveOverloadEngine.computeVolume(
                 weekNum,
-                baseSets = baseSets,
-                baseReps = baseReps
+                baseSets = setsToUse,
+                baseReps = repsToUse
             )
-            // Scale caps higher as strength level grows (sets cap at 10, reps cap at 50)
-            val maxSetsLimit = (6 + strengthLevel / 15).coerceAtMost(10)
-            val maxRepsLimit = (25 + strengthLevel / 2).coerceAtMost(50)
+            // Scale caps higher as strength level grows (sets cap at 12, reps cap at 60 for hard mode)
+            val maxSetsLimit = Math.round((6 + strengthLevel / 15) * timelineMultiplier).toInt().coerceIn(6, 12)
+            val maxRepsLimit = Math.round((25 + strengthLevel / 2) * timelineMultiplier * locationRepScale).toInt().coerceIn(25, 60)
             val finalSets = volume.sets.coerceIn(2, maxSetsLimit)
             val finalReps = volume.reps.coerceIn(5, maxRepsLimit)
 
             tasks.add(DailyTask(
                 id = idCounter + idx,
                 title = exercise.name.ifBlank { "Exercise ${idx + 1}" },
-                description = exercise.description.take(200).ifBlank { "Complete all sets with proper form." },
+                description = exercise.description.ifBlank { "Complete all sets with proper form." }.take(200),
                 taskType = TaskType.WORKOUT,
                 targetAttribute = AttributeType.STRENGTH,
-                xpReward = XpAlgorithm.xpForTask(profile.fitnessLevel.multiplier) + strengthLevel / 3L,
-                apReward = 15 + strengthLevel / 10,
+                xpReward = ( (XpAlgorithm.xpForTask(profile.fitnessLevel.multiplier) + strengthLevel / 3L) * timelineMultiplier * locationRewardMultiplier ).toLong(),
+                apReward = ( (15 + strengthLevel / 10) * timelineMultiplier * locationRewardMultiplier ).toInt(),
                 sets = finalSets,
                 reps = finalReps,
                 dateMs = now,
-                difficultyMultiplier = profile.fitnessLevel.multiplier
+                difficultyMultiplier = profile.fitnessLevel.multiplier * timelineMultiplier,
+                weight = if (profile.workoutLocation == WorkoutLocation.GYM) {
+                    calculateGymWeight(exercise.name, strengthLevel)
+                } else null
             ))
         }
         idCounter += 3
 
-        // Cardio task - scaled by STAMINA level (duration caps at 120 mins)
+        // Cardio task - scaled by STAMINA level and timeline target
         val baseCardioDuration = when (profile.primaryGoal) {
             FitnessGoal.LOSE_FAT -> 30
             FitnessGoal.ATHLETIC_PERFORMANCE -> 25
             else -> 20
         }
-        val maxCardioLimit = (60 + staminaLevel).coerceAtMost(120)
-        val levelCardioDuration = (baseCardioDuration + staminaLevel / 2).coerceIn(15, maxCardioLimit)
+        val maxCardioLimit = Math.round((60 + staminaLevel) * timelineMultiplier).toInt().coerceIn(60, 150)
+        val levelCardioDuration = Math.round((baseCardioDuration + staminaLevel / 2) * timelineMultiplier).toInt().coerceIn(15, maxCardioLimit)
         tasks.add(DailyTask(
             id = idCounter++,
             title = "Morning Run / Cardio",
             description = "Maintain a comfortable pace. Focus on breathing.",
             taskType = TaskType.CARDIO,
             targetAttribute = AttributeType.STAMINA,
-            xpReward = XpAlgorithm.xpForTask(1.2f) + staminaLevel / 3L,
-            apReward = 10 + staminaLevel / 10,
+            xpReward = ( (XpAlgorithm.xpForTask(1.2f) + staminaLevel / 3L) * timelineMultiplier ).toLong(),
+            apReward = ( (10 + staminaLevel / 10) * timelineMultiplier ).toInt(),
             durationMinutes = levelCardioDuration,
             dateMs = now
         ))
 
-        // Stretch task - scaled by FLEXIBILITY level (duration caps at 60 mins)
-        val maxStretchLimit = (30 + flexibilityLevel).coerceAtMost(60)
-        val levelStretchDuration = (10 + flexibilityLevel / 3).coerceIn(5, maxStretchLimit)
+        // Stretch task - scaled by FLEXIBILITY level and timeline target
+        val maxStretchLimit = Math.round((30 + flexibilityLevel) * timelineMultiplier).toInt().coerceIn(30, 80)
+        val levelStretchDuration = Math.round((10 + flexibilityLevel / 3) * timelineMultiplier).toInt().coerceIn(5, maxStretchLimit)
         tasks.add(DailyTask(
             id = idCounter++,
             title = "Full-Body Stretch",
             description = "Dynamic warm-up + 10 min post-workout static stretching.",
             taskType = TaskType.STRETCH,
             targetAttribute = AttributeType.FLEXIBILITY,
-            xpReward = XpAlgorithm.xpForTask(0.8f) + flexibilityLevel / 3L,
-            apReward = 5 + flexibilityLevel / 10,
+            xpReward = ( (XpAlgorithm.xpForTask(0.8f) + flexibilityLevel / 3L) * timelineMultiplier ).toLong(),
+            apReward = ( (5 + flexibilityLevel / 10) * timelineMultiplier ).toInt(),
             durationMinutes = levelStretchDuration,
             dateMs = now
         ))
 
-        // Reading task - scaled by INTELLIGENCE level (duration caps at 180 mins)
-        val maxReadingLimit = (90 + intelligenceLevel).coerceAtMost(180)
-        val levelReadingDuration = (30 + intelligenceLevel / 2).coerceIn(15, maxReadingLimit)
+        // Reading task - scaled by INTELLIGENCE level and timeline target
+        val maxReadingLimit = Math.round((90 + intelligenceLevel) * timelineMultiplier).toInt().coerceIn(90, 240)
+        val levelReadingDuration = Math.round((30 + intelligenceLevel / 2) * timelineMultiplier).toInt().coerceIn(15, maxReadingLimit)
         tasks.add(DailyTask(
             id = idCounter++,
             title = "Read or Learn",
             description = "30 minutes of reading, course, or skill development.",
             taskType = TaskType.READING,
             targetAttribute = AttributeType.INTELLIGENCE,
-            xpReward = XpAlgorithm.xpForTask(1.0f) + intelligenceLevel / 3L,
-            apReward = 8 + intelligenceLevel / 10,
+            xpReward = ( (XpAlgorithm.xpForTask(1.0f) + intelligenceLevel / 3L) * timelineMultiplier ).toLong(),
+            apReward = ( (8 + intelligenceLevel / 10) * timelineMultiplier ).toInt(),
             durationMinutes = levelReadingDuration,
             dateMs = now
         ))
 
-        // Diet task - scaled by ENERGY level (rewards scale)
+        // Diet task - scaled by ENERGY level and timeline target
         val dietTitle = when (profile.transformationPhase) {
             TransformationPhase.CUT -> "Follow Caloric Deficit Today"
             TransformationPhase.BULK -> "Hit Protein & Calorie Goals"
@@ -407,8 +451,8 @@ class TaskRepository @Inject constructor(
             description = getDietDescription(profile),
             taskType = TaskType.DIET,
             targetAttribute = AttributeType.ENERGY,
-            xpReward = XpAlgorithm.xpForTask(1.0f) + energyLevel / 3L,
-            apReward = 12 + energyLevel / 10,
+            xpReward = ( (XpAlgorithm.xpForTask(1.0f) + energyLevel / 3L) * timelineMultiplier ).toLong(),
+            apReward = ( (12 + energyLevel / 10) * timelineMultiplier ).toInt(),
             dateMs = now
         ))
 
@@ -421,17 +465,141 @@ class TaskRepository @Inject constructor(
         }
     }
 
+    suspend fun regenerateWorkoutTasksForToday(uid: String, profile: UserProfile) {
+        val (todayStart, todayEnd) = getTodayRange()
+        
+        // 1. Fetch current tasks for today to check completed state and size
+        val currentTasks = taskDao.observeTasksForDay(todayStart, todayEnd).first().map { it.toDomain() }
+        val uncompletedWorkouts = currentTasks.filter { it.taskType == TaskType.WORKOUT && !it.isCompleted }
+        
+        if (uncompletedWorkouts.isEmpty()) return // No uncompleted workouts to swap out
+        
+        // 2. Delete today's uncompleted workout tasks
+        taskDao.deleteUncompletedTasksForDayByType(todayStart, todayEnd, TaskType.WORKOUT.name)
+        
+        // 3. Fetch exercise list matching the new profile configuration
+        val exercises = fetchExercisesOrFallback(profile)
+        val completedNames = currentTasks.filter { it.taskType == TaskType.WORKOUT && it.isCompleted }.map { it.title }.toSet()
+        val availableExercises = exercises.filter { it.name !in completedNames }
+        
+        // 4. Calculate difficulty parameters
+        val attributeEntities = try { attributeDao.observeAll().first() } catch(e: Exception) { emptyList() }
+        val attributes = attributeEntities.associate { it.type to it.level }
+        val strengthLevel = attributes[AttributeType.STRENGTH.name] ?: 1
+        
+        val timelineMultiplier = when (profile.transformationMonths) {
+            3 -> 1.3f
+            6 -> 1.15f
+            9 -> 1.0f
+            12 -> 0.9f
+            18 -> 0.8f
+            24 -> 0.7f
+            else -> 1.0f
+        }
+        val locationRepScale = if (profile.workoutLocation == WorkoutLocation.GYM) 0.75f else 1.0f
+        val locationRewardMultiplier = if (profile.workoutLocation == WorkoutLocation.GYM) 1.2f else 1.0f
+        
+        val levelSetBonus = strengthLevel / 15
+        val levelRepBonus = strengthLevel / 5
+        val baseSets = (if (profile.fitnessLevel == FitnessLevel.BEGINNER) 2 else 3) + levelSetBonus
+        val baseReps = (when (profile.primaryGoal) {
+            FitnessGoal.BUILD_MUSCLE -> 8
+            FitnessGoal.LOSE_FAT -> 15
+            else -> 12
+        }) + levelRepBonus
+
+        val setsToUse = Math.round(baseSets * timelineMultiplier).toInt().coerceAtLeast(2)
+        val repsToUse = Math.round(baseReps * timelineMultiplier * locationRepScale).toInt().coerceAtLeast(5)
+        
+        val now = System.currentTimeMillis()
+        var idCounter = now + 10 // Unique timestamp offset to prevent duplicate primary keys
+        
+        val newWorkoutTasks = mutableListOf<DailyTask>()
+        availableExercises.take(uncompletedWorkouts.size).forEachIndexed { idx, exercise ->
+            val volume = ProgressiveOverloadEngine.computeVolume(
+                profile.trainingWeekNumber,
+                baseSets = setsToUse,
+                baseReps = repsToUse
+            )
+            val maxSetsLimit = Math.round((6 + strengthLevel / 15) * timelineMultiplier).toInt().coerceIn(6, 12)
+            val maxRepsLimit = Math.round((25 + strengthLevel / 2) * timelineMultiplier * locationRepScale).toInt().coerceIn(25, 60)
+            val finalSets = volume.sets.coerceIn(2, maxSetsLimit)
+            val finalReps = volume.reps.coerceIn(5, maxRepsLimit)
+
+            newWorkoutTasks.add(DailyTask(
+                id = idCounter + idx,
+                title = exercise.name.ifBlank { "Exercise ${idx + 1}" },
+                description = exercise.description.ifBlank { "Complete all sets with proper form." }.take(200),
+                taskType = TaskType.WORKOUT,
+                targetAttribute = AttributeType.STRENGTH,
+                xpReward = ( (XpAlgorithm.xpForTask(profile.fitnessLevel.multiplier) + strengthLevel / 3L) * timelineMultiplier * locationRewardMultiplier ).toLong(),
+                apReward = ( (15 + strengthLevel / 10) * timelineMultiplier * locationRewardMultiplier ).toInt(),
+                sets = finalSets,
+                reps = finalReps,
+                dateMs = now,
+                difficultyMultiplier = profile.fitnessLevel.multiplier * timelineMultiplier,
+                weight = if (profile.workoutLocation == WorkoutLocation.GYM) {
+                    calculateGymWeight(exercise.name, strengthLevel)
+                } else null
+            ))
+        }
+        
+        // Insert new ones locally
+        taskDao.insertAll(newWorkoutTasks.map { it.toEntity() })
+        
+        // Sync entire daily set to Supabase
+        val updatedTasks = taskDao.observeTasksForDay(todayStart, todayEnd).first().map { it.toDomain() }
+        syncScope.launch {
+            try { supabaseRepo.saveTasks(uid, updatedTasks) } catch (e: Exception) {}
+        }
+    }
+
+    private fun calculateGymWeight(name: String, strengthLevel: Int): String {
+        return when {
+            name.contains("bench press", ignoreCase = true) -> "${20 + (strengthLevel - 1) * 2} kg"
+            name.contains("barbell squat", ignoreCase = true) -> "${20 + (strengthLevel - 1) * 3} kg"
+            name.contains("deadlift", ignoreCase = true) -> "${30 + (strengthLevel - 1) * 4} kg"
+            name.contains("overhead press", ignoreCase = true) -> "${15 + (strengthLevel - 1) * 1.5} kg"
+            name.contains("dumbbell bicep curl", ignoreCase = true) -> "${6 + (strengthLevel / 10) * 2} kg per DB"
+            name.contains("dumbbell row", ignoreCase = true) -> "${10 + (strengthLevel - 1) * 1} kg per DB"
+            name.contains("tricep pushdown", ignoreCase = true) -> "${15 + (strengthLevel - 1) * 1.5} kg"
+            name.contains("lat pulldown", ignoreCase = true) -> "${25 + (strengthLevel - 1) * 2} kg"
+            name.contains("pull-up", ignoreCase = true) || name.contains("dips", ignoreCase = true) || name.contains("inverted row", ignoreCase = true) -> "Bodyweight"
+            else -> "Moderate weight"
+        }
+    }
+
     private suspend fun fetchExercisesOrFallback(profile: UserProfile): List<ExerciseData> {
-        return try {
+        val rawList = try {
             val categoryId = when (profile.primaryGoal) {
                 FitnessGoal.BUILD_MUSCLE -> 11
                 FitnessGoal.LOSE_FAT -> 10
                 else -> 12
             }
-            val response = wgerApi.getExercisesByCategory(categoryId = categoryId, limit = 5)
-            response.results.map { ExerciseData(it.name, it.description) }
+            val response = wgerApi.getExercisesByCategory(categoryId = categoryId, limit = 10)
+            response.results.map { ExerciseData(it.name, it.description, false) }
         } catch (e: Exception) {
             loadBundledExercises(context)
+        }
+        
+        return if (profile.workoutLocation == WorkoutLocation.HOME) {
+            rawList.filter { 
+                !it.requiresGym && 
+                !it.name.contains("dumbbell", ignoreCase = true) && 
+                !it.name.contains("barbell", ignoreCase = true) && 
+                !it.name.contains("machine", ignoreCase = true) && 
+                !it.name.contains("cable", ignoreCase = true) 
+            }.shuffled()
+        } else {
+            val gymSpecific = rawList.filter { 
+                it.requiresGym || 
+                it.name.contains("dumbbell", ignoreCase = true) || 
+                it.name.contains("barbell", ignoreCase = true) || 
+                it.name.contains("machine", ignoreCase = true) || 
+                it.name.contains("cable", ignoreCase = true) 
+            }.shuffled()
+            val other = rawList.filter { it !in gymSpecific }.shuffled()
+            gymSpecific + other
         }
     }
 
@@ -457,7 +625,11 @@ class TaskRepository @Inject constructor(
     }
 }
 
-data class ExerciseData(val name: String, val description: String)
+data class ExerciseData(
+    val name: String,
+    val description: String,
+    val requiresGym: Boolean = false
+)
 
 fun loadBundledExercises(context: Context): List<ExerciseData> {
     return try {
@@ -466,9 +638,9 @@ fun loadBundledExercises(context: Context): List<ExerciseData> {
         Gson().fromJson(json, type)
     } catch (e: Exception) {
         listOf(
-            ExerciseData("Push-Ups", "Standard push-ups targeting chest, shoulders, and triceps."),
-            ExerciseData("Bodyweight Squats", "Full range of motion squats for legs and glutes."),
-            ExerciseData("Pull-Ups", "Overhand grip pull-ups for back and biceps.")
+            ExerciseData("Push-Ups", "Standard push-ups targeting chest, shoulders, and triceps.", false),
+            ExerciseData("Bodyweight Squats", "Full range of motion squats for legs and glutes.", false),
+            ExerciseData("Pull-Ups", "Overhand grip pull-ups for back and biceps.", true)
         )
     }
 }

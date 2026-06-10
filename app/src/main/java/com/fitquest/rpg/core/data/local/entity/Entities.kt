@@ -19,7 +19,9 @@ data class UserProfileEntity(
     val wakeTimeHour: Int = 7,
     val sleepTimeHour: Int = 23,
     val onboardingComplete: Boolean = false,
-    val joinDateMs: Long = System.currentTimeMillis()
+    val joinDateMs: Long = System.currentTimeMillis(),
+    val transformationMonths: Int = 6,
+    val workoutLocation: String = WorkoutLocation.HOME.name
 ) {
     fun toDomain() = UserProfile(
         id = id, name = name, age = age,
@@ -30,7 +32,9 @@ data class UserProfileEntity(
         dietaryStyle = DietaryStyle.valueOf(dietaryStyle),
         workoutDaysPerWeek = workoutDaysPerWeek,
         wakeTimeHour = wakeTimeHour, sleepTimeHour = sleepTimeHour,
-        onboardingComplete = onboardingComplete, joinDateMs = joinDateMs
+        onboardingComplete = onboardingComplete, joinDateMs = joinDateMs,
+        transformationMonths = transformationMonths,
+        workoutLocation = try { WorkoutLocation.valueOf(workoutLocation) } catch (e: Exception) { WorkoutLocation.HOME }
     )
 }
 
@@ -43,7 +47,9 @@ fun UserProfile.toEntity() = UserProfileEntity(
     dietaryStyle = dietaryStyle.name,
     workoutDaysPerWeek = workoutDaysPerWeek,
     wakeTimeHour = wakeTimeHour, sleepTimeHour = sleepTimeHour,
-    onboardingComplete = onboardingComplete, joinDateMs = joinDateMs
+    onboardingComplete = onboardingComplete, joinDateMs = joinDateMs,
+    transformationMonths = transformationMonths,
+    workoutLocation = workoutLocation.name
 )
 
 @Entity(tableName = "attributes")
@@ -78,7 +84,8 @@ data class DailyTaskEntity(
     val isCompleted: Boolean = false,
     val completedAtMs: Long? = null,
     val dateMs: Long = System.currentTimeMillis(),
-    val difficultyMultiplier: Float = 1.0f
+    val difficultyMultiplier: Float = 1.0f,
+    val weight: String? = null
 ) {
     fun toDomain() = DailyTask(
         id = id, title = title, description = description,
@@ -87,7 +94,8 @@ data class DailyTaskEntity(
         xpReward = xpReward, apReward = apReward,
         sets = sets, reps = reps, durationMinutes = durationMinutes,
         isCompleted = isCompleted, completedAtMs = completedAtMs,
-        dateMs = dateMs, difficultyMultiplier = difficultyMultiplier
+        dateMs = dateMs, difficultyMultiplier = difficultyMultiplier,
+        weight = weight
     )
 }
 
@@ -97,7 +105,8 @@ fun DailyTask.toEntity() = DailyTaskEntity(
     xpReward = xpReward, apReward = apReward,
     sets = sets, reps = reps, durationMinutes = durationMinutes,
     isCompleted = isCompleted, completedAtMs = completedAtMs,
-    dateMs = dateMs, difficultyMultiplier = difficultyMultiplier
+    dateMs = dateMs, difficultyMultiplier = difficultyMultiplier,
+    weight = weight
 )
 
 @Entity(tableName = "reward_cards")

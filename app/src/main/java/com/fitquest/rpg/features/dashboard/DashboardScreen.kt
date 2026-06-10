@@ -264,12 +264,14 @@ fun DashboardScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("⚙️", fontSize = 40.sp)
-                                Spacer(Modifier.height(8.dp))
+                                com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 56.dp, accentColor = SuccessGreen)
+                                Spacer(Modifier.height(12.dp))
                                 Text(
-                                    "Generating your daily quests...",
+                                    "GENERATING DAILY QUESTS...",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
                                 )
                             }
                         }
@@ -284,11 +286,14 @@ fun DashboardScreen(
                             TaskItem(
                                 task = task,
                                 onComplete = {
-                                    viewModel.completeTask(task.id)
-                                    coroutineScope.launch {
-                                        try {
-                                            listState.animateScrollToItem(0)
-                                        } catch (e: Exception) {}
+                                    val wasCompleted = task.isCompleted
+                                    viewModel.toggleTask(task.id)
+                                    if (!wasCompleted) {
+                                        coroutineScope.launch {
+                                            try {
+                                                listState.animateScrollToItem(0)
+                                            } catch (e: Exception) {}
+                                        }
                                     }
                                 },
                                 modifier = Modifier.padding(horizontal = 16.dp)
@@ -329,9 +334,15 @@ fun DashboardScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Color.White)
+                    com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 64.dp, accentColor = SuccessGreen)
                     Spacer(Modifier.height(16.dp))
-                    Text("Summoning your destiny...", color = Color.White)
+                    Text(
+                        text = "SUMMONING YOUR DESTINY...",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
         }
@@ -713,7 +724,7 @@ private fun AttributesSection(
         if (attributes.isEmpty()) {
             RpgCard(glowColor = BorderNavy) {
                 Box(Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = NeonPurple, modifier = Modifier.size(24.dp))
+                    com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 32.dp, accentColor = NeonPurple)
                 }
             }
         } else {

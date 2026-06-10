@@ -62,7 +62,7 @@ public final class EconomyDao_Impl implements EconomyDao {
   }
 
   @Override
-  public Object upsert(final EconomyEntity economy, final Continuation<? super Unit> $completion) {
+  public Object upsert(final EconomyEntity economy, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -76,7 +76,7 @@ public final class EconomyDao_Impl implements EconomyDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -134,7 +134,7 @@ public final class EconomyDao_Impl implements EconomyDao {
   }
 
   @Override
-  public Object getEconomy(final Continuation<? super EconomyEntity> $completion) {
+  public Object getEconomy(final Continuation<? super EconomyEntity> arg0) {
     final String _sql = "SELECT * FROM economy WHERE id = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -181,7 +181,7 @@ public final class EconomyDao_Impl implements EconomyDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @NonNull

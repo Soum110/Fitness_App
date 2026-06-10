@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import com.fitquest.rpg.ui.components.*
 import com.fitquest.rpg.ui.theme.*
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import kotlinx.coroutines.withContext
@@ -77,43 +78,47 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun deleteAccount(password: String, onSuccess: (String?) -> Unit, onFailure: (String) -> Unit) {
+    fun resetProgress(onSuccess: (String?) -> Unit, onFailure: (String) -> Unit) {
         val user = auth.currentUser
         val uid = user?.uid
-        val email = user?.email
-        if (uid == null || email == null) {
+        if (uid == null) {
             onFailure("No user is currently signed in.")
-            return
-        }
-        if (password.isBlank()) {
-            onFailure("Please enter your password to confirm.")
             return
         }
 
         viewModelScope.launch {
             try {
-                // 1. Re-authenticate user
-                auth.reauthenticate(password)
-
-                // 2. Stop all active sync jobs
+                // 1. Stop all active sync jobs
                 userRepo.stopSync()
                 taskRepo.stopSync()
                 rewardCardRepo.stopSync()
 
-                // 3. Delete remote data in Supabase (while auth token is still valid)
+                // 2. Clear remote data in Supabase (while auth token is still valid)
                 supabaseRepo.deleteUserData(uid)
 
-                // 4. Clear local cache
+                // 3. Clear local cache
                 withContext(Dispatchers.IO) {
                     db.clearAllTables()
                 }
 
-                // 5. Sign out since database data was successfully deleted
+                // 4. Sign out since database progress was successfully cleared
                 auth.signOut()
 
                 onSuccess(null)
             } catch (e: Exception) {
-                onFailure(e.localizedMessage ?: "Failed to delete registry.")
+                onFailure(e.localizedMessage ?: "Failed to reset progress.")
+            }
+        }
+    }
+
+    fun updateProfile(profile: UserProfile) {
+        val uid = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                userRepo.saveProfile(uid, profile)
+                taskRepo.regenerateWorkoutTasksForToday(uid, profile)
+            } catch (e: Exception) {
+                // ignore
             }
         }
     }
@@ -129,7 +134,6 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     // Onboarding Tutorial States
@@ -143,10 +147,19 @@ fun ProfileScreen(
         }
     }
 
-    // Show loading if profile not yet loaded
     if (state.profile == null) {
         Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = Color.White)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 60.dp, accentColor = SuccessGreen)
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = "SYNCHRONIZING PROFILE...",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium,
+                    letterSpacing = 2.sp
+                )
+            }
         }
         return
     }
@@ -194,46 +207,26 @@ fun ProfileScreen(
         AlertDialog(
             onDismissRequest = { 
                 showDeleteDialog = false
-                confirmPassword = ""
             },
             containerColor = CardNavy,
             shape = RoundedCornerShape(8.dp),
-            title = { Text("Delete Registry & Start Over?", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
+            title = { Text("Clear Progress & Reset?", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "This action is permanent and cannot be undone. All your levels, daily quests, action points, and store history will be permanently deleted from the database. You will be signed out and can sign up again with a new sheet.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    OutlinedTextField(
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
-                        label = { Text("Confirm Password") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = BorderNavy,
-                            focusedLabelColor = Color.White,
-                            cursorColor = Color.White
-                        )
-                    )
-                }
+                Text(
+                    "This action is permanent and cannot be undone. All your levels, daily quests, action points, and store history will be permanently deleted from the database. You will be signed out and must set up your requirements again.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        val pwd = confirmPassword
                         showDeleteDialog = false
-                        confirmPassword = ""
-                        viewModel.deleteAccount(
-                            password = pwd,
+                        viewModel.resetProgress(
                             onSuccess = { message ->
                                 if (message != null) {
                                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                                 } else {
-                                    Toast.makeText(context, "Registry wiped and account deleted successfully.", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "All progress reset successfully. Please log back in to set up your profile.", Toast.LENGTH_LONG).show()
                                 }
                                 onLogout()
                             },
@@ -245,14 +238,13 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(6.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935), contentColor = Color.White)
                 ) {
-                    Text("Delete Permanently")
+                    Text("Reset Progress")
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { 
                         showDeleteDialog = false
-                        confirmPassword = ""
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                 ) {
@@ -589,6 +581,84 @@ fun ProfileScreen(
                     CharacterRow("Campaign Chronicle", "Week ${profile.trainingWeekNumber}", Color.White, com.fitquest.rpg.R.drawable.ic_streak)
                 }
             }
+
+            // 4. TRAINING ZONE SETTINGS
+            RpgCard(glowColor = BorderNavy) {
+                Text(
+                    text = "TRAINING ZONE SETTINGS",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFF888888),
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                if (profile.workoutLocation == WorkoutLocation.GYM) com.fitquest.rpg.R.drawable.ic_strength
+                                else com.fitquest.rpg.R.drawable.ic_timer
+                            ),
+                            contentDescription = null,
+                            tint = NeonGold,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "Workout Location",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (profile.workoutLocation == WorkoutLocation.GYM) "Gym Workouts Enabled" else "Bodyweight Workouts Enabled",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF888888)
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .background(Color(0xFF0C0C0C), RoundedCornerShape(4.dp))
+                            .border(0.5.dp, BorderNavy, RoundedCornerShape(4.dp))
+                            .padding(2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf(WorkoutLocation.HOME, WorkoutLocation.GYM).forEach { loc ->
+                            val isSelected = profile.workoutLocation == loc
+                            val bg = if (isSelected) SuccessGreen.copy(alpha = 0.15f) else Color.Transparent
+                            val border = if (isSelected) SuccessGreen.copy(alpha = 0.4f) else Color.Transparent
+                            val textCol = if (isSelected) Color.White else Color(0xFF888888)
+                            Box(
+                                modifier = Modifier
+                                    .background(bg, RoundedCornerShape(3.dp))
+                                    .border(0.5.dp, border, RoundedCornerShape(3.dp))
+                                    .clickable {
+                                        if (profile.workoutLocation != loc) {
+                                            viewModel.updateProfile(profile.copy(workoutLocation = loc))
+                                            Toast.makeText(context, "Workout environment changed to ${if (loc == WorkoutLocation.GYM) "Gym" else "Home/Travel"}.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = if (loc == WorkoutLocation.HOME) "HOME" else "GYM",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = textCol,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -630,7 +700,7 @@ fun ProfileScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // Delete Account button
+        // Clear Progress & Reset button
         OutlinedButton(
             onClick = { showDeleteDialog = true },
             modifier = Modifier
@@ -640,9 +710,9 @@ fun ProfileScreen(
             border = BorderStroke(1.dp, Color(0xFFE53935).copy(alpha = 0.4f)),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Delete Registry & Start Over", color = Color(0xFFE53935))
+            Text("Clear Progress & Reset", color = Color(0xFFE53935))
         }
 
         Spacer(Modifier.height(80.dp))

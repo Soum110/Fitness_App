@@ -141,9 +141,10 @@ interface SupabaseApiService {
         @Query("uid") uidFilter: String
     )
 
-    @POST("rest/v1/rpc/delete_user_account")
-    suspend fun deleteUserAccount(
-        @Header("Authorization") token: String
+    @POST("rest/v1/rpc/clear_user_progress")
+    suspend fun clearUserProgress(
+        @Header("Authorization") token: String,
+        @Body body: Map<String, String>
     )
 }
 
@@ -180,7 +181,9 @@ data class SupabaseProfile(
     @SerializedName("wake_time_hour") val wakeTimeHour: Int,
     @SerializedName("sleep_time_hour") val sleepTimeHour: Int,
     @SerializedName("onboarding_complete") val onboardingComplete: Boolean,
-    @SerializedName("join_date_ms") val joinDateMs: Long
+    @SerializedName("join_date_ms") val joinDateMs: Long,
+    @SerializedName("transformation_months") val transformationMonths: Int,
+    @SerializedName("workout_location") val workoutLocation: String
 )
 
 data class SupabaseEconomy(

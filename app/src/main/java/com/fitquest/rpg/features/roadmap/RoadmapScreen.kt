@@ -170,12 +170,32 @@ fun RoadmapScreen(
                 .padding(padding)
                 .background(Color.Black)
         ) {
-            // Scrollable Progression Track
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-            ) {
+            if (!state.loaded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        com.fitquest.rpg.ui.components.FitQuestLoadingSpinner(size = 64.dp, accentColor = rankColor)
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            text = "DECODING ASCENSION ROADMAP...",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                            letterSpacing = 2.sp
+                        )
+                    }
+                }
+            } else {
+                // Scrollable Progression Track
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -391,6 +411,7 @@ fun RoadmapScreen(
             }
         }
     }
+}
 }
 
 private fun getRankDesc(rank: Rank): String = when (rank) {
